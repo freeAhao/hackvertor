@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +19,33 @@ import java.util.stream.Collectors;
 import static burp.BurpExtender.*;
 
 public class Utils {
+
+    public static String buildUrl(URL url) {
+        int port = url.getPort();
+        StringBuilder urlResult = new StringBuilder();
+        urlResult.append(url.getProtocol());
+        urlResult.append(":");
+        if (url.getAuthority() != null && url.getAuthority().length() > 0) {
+            urlResult.append("//");
+            urlResult.append(url.getHost());
+        }
+
+        if ((url.getProtocol().equals("http") && port != 80) || (url.getProtocol().equals("https") && port != 443) && port != -1) {
+            urlResult.append(':').append(port);
+        }
+        if (url.getPath() != null) {
+            urlResult.append(url.getPath());
+        }
+        if (url.getQuery() != null) {
+            urlResult.append("?");
+            urlResult.append(url.getQuery());
+        }
+        if (url.getRef() != null) {
+            urlResult.append("#");
+            urlResult.append(url.getRef());
+        }
+        return urlResult.toString();
+    }
 
     public static JScrollPane createButtons(List<Tag> tags, final JTextArea inputArea, Tag.Category displayCategory, String searchTag, Boolean regex) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));

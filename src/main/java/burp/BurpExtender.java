@@ -32,7 +32,7 @@ import java.util.List;
 
 import static burp.Convertors.*;
 
-public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
+public class BurpExtender implements IBurpExtender, ITab {
     //TODO Unset on unload
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
@@ -60,6 +60,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
     private final MessageEditorTabFactory messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
     private final HttpListener httpListener = new HttpListener();
     private final ExtensionStateListener extensionStateListener = new ExtensionStateListener();
+    private final ContextMenuFactory contextMenuFactory = new ContextMenuFactory();
 
     public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
         GridBagConstraints c = new GridBagConstraints();
@@ -177,7 +178,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
             stderr.println(e.getMessage());
         }
         callbacks.setExtensionName("Hackvertor");
-        callbacks.registerContextMenuFactory(this);
+        callbacks.registerContextMenuFactory(contextMenuFactory);
         callbacks.registerHttpListener(httpListener);
         callbacks.registerExtensionStateListener(extensionStateListener);
         Security.addProvider(new BouncyCastleProvider());
@@ -844,113 +845,6 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
         return "Hackvertor";
     }
 
-    public String buildUrl(URL url) {
-        int port = url.getPort();
-        StringBuilder urlResult = new StringBuilder();
-        urlResult.append(url.getProtocol());
-        urlResult.append(":");
-        if (url.getAuthority() != null && url.getAuthority().length() > 0) {
-            urlResult.append("//");
-            urlResult.append(url.getHost());
-        }
-
-        if ((url.getProtocol().equals("http") && port != 80) || (url.getProtocol().equals("https") && port != 443) && port != -1) {
-            urlResult.append(':').append(port);
-        }
-        if (url.getPath() != null) {
-            urlResult.append(url.getPath());
-        }
-        if (url.getQuery() != null) {
-            urlResult.append("?");
-            urlResult.append(url.getQuery());
-        }
-        if (url.getRef() != null) {
-            urlResult.append("#");
-            urlResult.append(url.getRef());
-        }
-        return urlResult.toString();
-    }
-
-    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-        int[] bounds = invocation.getSelectionBounds();
-
-        switch (invocation.getInvocationContext()) {
-            case IContextMenuInvocation.CONTEXT_INTRUDER_PAYLOAD_POSITIONS:
-            case IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST:
-            case IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_RESPONSE:
-                break;
-            default:
-                return null;
-        }
-        List<JMenuItem> menu = new ArrayList<JMenuItem>();
-        JMenu submenu = new JMenu("Hackvertor");
-        Action hackvertorAction;
-        if (bounds[0] == bounds[1] && invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_RESPONSE) {
-            hackvertorAction = new HackvertorAction("Send response body to Hackvertor", extensionPanel, invocation);
-        } else {
-            hackvertorAction = new HackvertorAction("Send to Hackvertor", extensionPanel, invocation);
-        }
-        JMenuItem sendToHackvertor = new JMenuItem(hackvertorAction);
-        submenu.add(sendToHackvertor);
-
-        if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_RESPONSE) {
-            menu.add(submenu);
-            return menu;
-        }
-
-        JMenuItem copyUrl = new JMenuItem("Copy URL");
-        copyUrl.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
-            URL url = helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), helpers.stringToBytes(hv.convert(helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest())))).getUrl();
-            StringSelection stringSelection = null;
-            stringSelection = new StringSelection(buildUrl(url));
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
-        });
-        submenu.add(copyUrl);
-
-        JMenuItem convert = new JMenuItem("Convert tags");
-        convert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
-            if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
-                byte[] message = invocation.getSelectedMessages()[0].getRequest();
-                invocation.getSelectedMessages()[0].setRequest(helpers.stringToBytes(hv.convert(helpers.bytesToString(message))));
-            }
-        });
-        submenu.add(convert);
-        JMenuItem autodecodeConvert = new JMenuItem("Auto decode & Convert");
-        autodecodeConvert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
-            if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
-                byte[] message = invocation.getSelectedMessages()[0].getRequest();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                try {
-                    outputStream.write(Arrays.copyOfRange(message, 0, bounds[0]));
-                    outputStream.write(helpers.stringToBytes("<@auto_decode_no_decrypt>"));
-                    outputStream.write(Arrays.copyOfRange(message, bounds[0], bounds[1]));
-                    outputStream.write(helpers.stringToBytes("<@/auto_decode_no_decrypt>"));
-                    outputStream.write(Arrays.copyOfRange(message, bounds[1], message.length));
-                    outputStream.flush();
-                    invocation.getSelectedMessages()[0].setRequest(outputStream.toByteArray());
-                } catch (IOException e1) {
-                    System.err.println(e1.toString());
-                }
-                message = invocation.getSelectedMessages()[0].getRequest();
-                invocation.getSelectedMessages()[0].setRequest(helpers.stringToBytes(hv.convert(helpers.bytesToString(message))));
-            }
-        });
-        submenu.add(autodecodeConvert);
-        submenu.addSeparator();
-        loadCustomTags();
-        for (int i = 0; i < Tag.Category.values().length; i++) {
-            Tag.Category category = Tag.Category.values()[i];
-            JMenu categoryMenu = Utils.createTagMenuForCategory(hackvertor.getTags(), category, invocation, "", false);
-            submenu.add(categoryMenu);
-        }
-        menu.add(submenu);
-        return menu;
-    }
-
     public void alert(String msg) {
         JOptionPane.showMessageDialog(null, msg);
     }
@@ -972,5 +866,13 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
     public void removeHvMenuBar(){
         burpMenuBar.remove(hvMenuBar);
         burpMenuBar.repaint();
+    }
+
+    public ExtensionPanel getExtensionPanel() {
+        return extensionPanel;
+    }
+
+    public Hackvertor getHackvertor() {
+        return hackvertor;
     }
 }

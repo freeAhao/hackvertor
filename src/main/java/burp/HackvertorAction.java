@@ -8,13 +8,13 @@ import java.awt.event.ActionEvent;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-class HackvertorAction extends AbstractAction {
+public class HackvertorAction extends AbstractAction {
 
     private final ExtensionPanel extensionPanel;
     private final IContextMenuInvocation invocation;
     private static final long serialVersionUID = 1L;
 
-    HackvertorAction(String text, ExtensionPanel extensionPanel, IContextMenuInvocation invocation) {
+    public HackvertorAction(String text, ExtensionPanel extensionPanel, IContextMenuInvocation invocation) {
         super(text);
         this.extensionPanel = extensionPanel;
         this.invocation = invocation;
