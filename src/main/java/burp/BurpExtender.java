@@ -2,6 +2,7 @@ package burp;
 
 import burp.burpimpl.HackvertorMessageTab;
 import burp.burpimpl.HackvertorPayloadProcessor;
+import burp.burpimpl.HttpListener;
 import burp.burpimpl.MessageEditorTabFactory;
 import burp.ui.ExtensionPanel;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -34,7 +35,7 @@ import java.util.List;
 
 import static burp.Convertors.*;
 
-public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, IHttpListener, IExtensionStateListener {
+public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, IExtensionStateListener {
     //TODO Unset on unload
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
@@ -56,17 +57,12 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
     private Hackvertor hackvertor = new Hackvertor();
     private ExtensionPanel extensionPanel;
 
-    private boolean tagsInProxy = false;
-    private boolean tagsInIntruder = true;
-    private boolean tagsInRepeater = true;
-    private boolean tagsInScanner = true;
-    private boolean tagsInExtensions = true;
-    private boolean autoUpdateContentLength = true;
-    private boolean hvShutdown = false;
+    public boolean hvShutdown = false;
     private JMenuBar burpMenuBar;
     private JMenu hvMenuBar;
 
     private final MessageEditorTabFactory messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
+    private final HttpListener httpListener = new HttpListener();
 
     public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
         GridBagConstraints c = new GridBagConstraints();
@@ -185,7 +181,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         }
         callbacks.setExtensionName("Hackvertor");
         callbacks.registerContextMenuFactory(this);
-        callbacks.registerHttpListener(this);
+        callbacks.registerHttpListener(httpListener);
         callbacks.registerExtensionStateListener(this);
         Security.addProvider(new BouncyCastleProvider());
         SwingUtilities.invokeLater(new Runnable() {
@@ -201,7 +197,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
                     burpMenuBar = getBurpFrame().getJMenuBar();
                     hvMenuBar = new JMenu("Hackvertor");
                     final JCheckBoxMenuItem codeExecutionMenu = new JCheckBoxMenuItem(
-                            "Allow code execution tags", tagsInProxy);
+                            "Allow code execution tags", httpListener.isTagsInProxy());
                     codeExecutionMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (codeExecutionMenu.getState()) {
@@ -213,73 +209,73 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
                     });
                     hvMenuBar.add(codeExecutionMenu);
                     final JCheckBoxMenuItem tagsInProxyMenu = new JCheckBoxMenuItem(
-                            "Allow tags in Proxy", tagsInProxy);
+                            "Allow tags in Proxy", httpListener.isTagsInProxy());
                     tagsInProxyMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (tagsInProxyMenu.getState()) {
-                                tagsInProxy = true;
+                                httpListener.setTagsInProxy(true);
                             } else {
-                                tagsInProxy = false;
+                                httpListener.setTagsInProxy(false);
                             }
                         }
                     });
                     hvMenuBar.add(tagsInProxyMenu);
                     final JCheckBoxMenuItem tagsInIntruderMenu = new JCheckBoxMenuItem(
-                            "Allow tags in Intruder", tagsInIntruder);
+                            "Allow tags in Intruder", httpListener.isTagsInIntruder());
                     tagsInIntruderMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (tagsInIntruderMenu.getState()) {
-                                tagsInIntruder = true;
+                                httpListener.setTagsInIntruder(true);
                             } else {
-                                tagsInIntruder = false;
+                                httpListener.setTagsInIntruder(false);
                             }
                         }
                     });
                     hvMenuBar.add(tagsInIntruderMenu);
                     final JCheckBoxMenuItem tagsInRepeaterMenu = new JCheckBoxMenuItem(
-                            "Allow tags in Repeater", tagsInRepeater);
+                            "Allow tags in Repeater", httpListener.isTagsInRepeater());
                     tagsInRepeaterMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (tagsInRepeaterMenu.getState()) {
-                                tagsInRepeater = true;
+                                httpListener.setTagsInRepeater(true);
                             } else {
-                                tagsInRepeater = false;
+                                httpListener.setTagsInRepeater(false);
                             }
                         }
                     });
                     hvMenuBar.add(tagsInRepeaterMenu);
                     final JCheckBoxMenuItem tagsInScannerMenu = new JCheckBoxMenuItem(
-                            "Allow tags in Scanner", tagsInScanner);
+                            "Allow tags in Scanner", httpListener.isTagsInScanner());
                     tagsInScannerMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (tagsInScannerMenu.getState()) {
-                                tagsInScanner = true;
+                                httpListener.setTagsInScanner(true);
                             } else {
-                                tagsInScanner = false;
+                                httpListener.setTagsInScanner(false);
                             }
                         }
                     });
                     hvMenuBar.add(tagsInScannerMenu);
                     final JCheckBoxMenuItem tagsInExtensionsMenu = new JCheckBoxMenuItem(
-                            "Allow tags in Extensions", tagsInExtensions);
+                            "Allow tags in Extensions",httpListener.isTagsInExtensions());
                     tagsInExtensionsMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (tagsInExtensionsMenu.getState()) {
-                                tagsInExtensions = true;
+                                httpListener.setTagsInExtensions(true);
                             } else {
-                                tagsInExtensions = false;
+                                httpListener.setTagsInExtensions(false);
                             }
                         }
                     });
                     hvMenuBar.add(tagsInExtensionsMenu);
                     final JCheckBoxMenuItem fixContentLengthMenu = new JCheckBoxMenuItem(
-                            "Auto update content length", autoUpdateContentLength);
+                            "Auto update content length", httpListener.isAutoUpdateContentLength());
                     fixContentLengthMenu.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent e) {
                             if (fixContentLengthMenu.getState()) {
-                                autoUpdateContentLength = true;
+                                httpListener.setAutoUpdateContentLength(true);
                             } else {
-                                autoUpdateContentLength = false;
+                                httpListener.setAutoUpdateContentLength(false);
                             }
                         }
                     });
@@ -843,123 +839,6 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         burpMenuBar.remove(hvMenuBar);
         burpMenuBar.repaint();
         stdout.println("Hackvertor unloaded");
-    }
-
-    public byte[] fixContentLength(byte[] request) {
-        IRequestInfo analyzedRequest = helpers.analyzeRequest(request);
-        if (countMatches(request, helpers.stringToBytes("Content-Length: ")) > 0) {
-            int start = analyzedRequest.getBodyOffset();
-            int contentLength = request.length - start;
-            return setHeader(request, "Content-Length", Integer.toString(contentLength));
-        } else {
-            return request;
-        }
-    }
-
-    public int[] getHeaderOffsets(byte[] request, String header) {
-        int i = 0;
-        int end = request.length;
-        while (i < end) {
-            int line_start = i;
-            while (i < end && request[i++] != ' ') {
-            }
-            byte[] header_name = Arrays.copyOfRange(request, line_start, i - 2);
-            int headerValueStart = i;
-            while (i < end && request[i++] != '\n') {
-            }
-            if (i == end) {
-                break;
-            }
-
-            String header_str = helpers.bytesToString(header_name);
-
-            if (header.equals(header_str)) {
-                int[] offsets = {line_start, headerValueStart, i - 2};
-                return offsets;
-            }
-
-            if (i + 2 < end && request[i] == '\r' && request[i + 1] == '\n') {
-                break;
-            }
-        }
-        return null;
-    }
-
-    public byte[] setHeader(byte[] request, String header, String value) {
-        int[] offsets = getHeaderOffsets(request, header);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            outputStream.write(Arrays.copyOfRange(request, 0, offsets[1]));
-            outputStream.write(helpers.stringToBytes(value));
-            outputStream.write(Arrays.copyOfRange(request, offsets[2], request.length));
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Request creation unexpectedly failed");
-        } catch (NullPointerException e) {
-            throw new RuntimeException("Can't find the header");
-        }
-    }
-
-    int countMatches(byte[] response, byte[] match) {
-        int matches = 0;
-        if (match.length < 4) {
-            return matches;
-        }
-
-        int start = 0;
-        while (start < response.length) {
-            start = helpers.indexOf(response, match, true, start, response.length);
-            if (start == -1)
-                break;
-            matches += 1;
-            start += match.length;
-        }
-
-        return matches;
-    }
-
-    public void processHttpMessage(int toolFlag, boolean messageIsRequest, IHttpRequestResponse messageInfo) {
-        if (!messageIsRequest) {
-            return;
-        }
-        switch (toolFlag) {
-            case IBurpExtenderCallbacks.TOOL_PROXY:
-                if (!tagsInProxy) {
-                    return;
-                }
-                break;
-            case IBurpExtenderCallbacks.TOOL_INTRUDER:
-                if (!tagsInIntruder) {
-                    return;
-                }
-                break;
-            case IBurpExtenderCallbacks.TOOL_REPEATER:
-                if (!tagsInRepeater) {
-                    return;
-                }
-                break;
-            case IBurpExtenderCallbacks.TOOL_SCANNER:
-                if (!tagsInScanner) {
-                    return;
-                }
-                break;
-            case IBurpExtenderCallbacks.TOOL_EXTENDER:
-                if (!tagsInExtensions) {
-                    return;
-                }
-                break;
-            default:
-                return;
-        }
-        byte[] request = messageInfo.getRequest();
-        if (helpers.indexOf(request, helpers.stringToBytes("<@"), true, 0, request.length) > -1) {
-            Hackvertor hv = new Hackvertor();
-            request = helpers.stringToBytes(hv.convert(helpers.bytesToString(request)));
-            if (autoUpdateContentLength) {
-                request = fixContentLength(request);
-            }
-            messageInfo.setRequest(request);
-        }
     }
 
     private static JFrame getBurpFrame() {
