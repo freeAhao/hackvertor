@@ -20,7 +20,7 @@ public class ExtensionStateListener implements IExtensionStateListener {
     @Override
     public void extensionUnloaded() {
         hvShutdown = true;
-        BurpExtender.getInstance().removeHvMenuBar();
+        BurpExtender.getInstance().getBurpMenu().removeHvMenuBar();
         BurpExtender.stdout.println("Hackvertor unloaded");
     }
 }

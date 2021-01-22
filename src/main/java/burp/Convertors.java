@@ -2686,7 +2686,7 @@ public class Convertors {
         return "eval(`" + str.replaceAll("(.)", "$1\\${[]}") + "`)";
     }
 
-    static String python(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
+    public static String python(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
         if (!codeExecutionTagsEnabled) {
             return "Code execution tags are disabled by default. Use the menu bar to enable them.";
         }
@@ -2739,7 +2739,7 @@ public class Convertors {
         }
     }
 
-    static String javascript(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
+    public static String javascript(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
         if (!codeExecutionTagsEnabled) {
             return "Code execution tags are disabled by default. Use the menu bar to enable them.";
         }

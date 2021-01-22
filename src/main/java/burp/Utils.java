@@ -163,4 +163,19 @@ public class Utils {
         }
         return parentMenu;
     }
+
+    public static JFrame getBurpFrame() {
+        for (Frame f : Frame.getFrames()) {
+            if (f.isVisible() && f.getTitle().startsWith(("Burp Suite"))) {
+                return (JFrame) f;
+            }
+        }
+        return null;
+    }
+
+    public static void alert(String msg) {
+        JOptionPane.showMessageDialog(null, msg);
+    }
+
+
 }
