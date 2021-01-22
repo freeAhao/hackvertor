@@ -32,7 +32,7 @@ import java.util.List;
 
 import static burp.Convertors.*;
 
-public class BurpExtender implements IBurpExtender, ITab {
+public class BurpExtender implements IBurpExtender {
     //TODO Unset on unload
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
@@ -61,6 +61,7 @@ public class BurpExtender implements IBurpExtender, ITab {
     private final HttpListener httpListener = new HttpListener();
     private final ExtensionStateListener extensionStateListener = new ExtensionStateListener();
     private final ContextMenuFactory contextMenuFactory = new ContextMenuFactory();
+    private final Tab tab = new Tab();
 
     public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
         GridBagConstraints c = new GridBagConstraints();
@@ -191,7 +192,7 @@ public class BurpExtender implements IBurpExtender, ITab {
                     registerPayloadProcessors();
                     extensionPanel = new ExtensionPanel(hackvertor);
 
-                    callbacks.addSuiteTab(BurpExtender.this);
+                    callbacks.addSuiteTab(tab);
                     burpMenuBar = getBurpFrame().getJMenuBar();
                     hvMenuBar = new JMenu("Hackvertor");
                     final JCheckBoxMenuItem codeExecutionMenu = new JCheckBoxMenuItem(
@@ -841,16 +842,8 @@ public class BurpExtender implements IBurpExtender, ITab {
         return null;
     }
 
-    public String getTabCaption() {
-        return "Hackvertor";
-    }
-
     public void alert(String msg) {
         JOptionPane.showMessageDialog(null, msg);
-    }
-
-    public Component getUiComponent() {
-        return extensionPanel;
     }
 
     private static BurpExtender instance;
