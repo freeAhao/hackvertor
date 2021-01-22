@@ -97,7 +97,7 @@ public class BurpExtender implements IBurpExtender {
             public void run() {
                 try {
                     hackvertor.init();
-	            	stdout.println("Hackvertor v1.6.0");
+                    stdout.println("Hackvertor v1.6.0");
                     tagManage.loadCustomTags();
                     registerPayloadProcessors();
                     extensionPanel = new ExtensionPanel(hackvertor);
@@ -105,7 +105,7 @@ public class BurpExtender implements IBurpExtender {
                     callbacks.addSuiteTab(tab);
                     burpMenu = new BurpMenu(httpListener, hackvertor);
                     burpMenu.createMenu();
-                     messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
+                    messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
                     callbacks.registerMessageEditorTabFactory(messageEditorTabFactory);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -121,6 +121,7 @@ public class BurpExtender implements IBurpExtender {
             }
         }
     }
+
     private static BurpExtender instance;
 
     public BurpExtender(){
