@@ -1,6 +1,8 @@
 package burp;
 
 import burp.parser.Element;
+import burp.tag.Tag;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -11,6 +13,8 @@ import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -177,5 +181,49 @@ public class Utils {
         JOptionPane.showMessageDialog(null, msg);
     }
 
+
+    public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 0;
+        c.weighty = 0;
+        c.gridx = x;
+        c.gridy = y;
+        c.ipadx = 0;
+        c.ipady = 0;
+        c.gridwidth = gridWidth;
+        return c;
+    }
+
+
+    public static ImageIcon createImageIcon(String path, String description) {
+        java.net.URL imgURL = BurpExtender.class.getResource(path);
+        if (imgURL != null) {
+            return new ImageIcon(imgURL, description);
+        } else {
+            stderr.println("Couldn't find file: " + path);
+            return null;
+        }
+    }
+
+    private JPanel generateBlankPanel() {
+        JPanel blankPanel = new JPanel();
+        blankPanel.setMaximumSize(new Dimension(0, 0));
+        blankPanel.setVisible(false);
+        return blankPanel;
+    }
+
+    public static String generateRandomCodeExecutionKey() {
+        byte[] randomBytes = new byte[256];
+        SecureRandom secureRandom = null;
+        try {
+            secureRandom = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            stderr.println("Error get algo:" + e.toString());
+            return null;
+        }
+        secureRandom.nextBytes(randomBytes);
+        return DigestUtils.sha256Hex(helpers.bytesToString(randomBytes)).substring(0, 32);
+    }
 
 }

@@ -2,7 +2,7 @@ package burp.ui;
 
 import burp.Hackvertor;
 import burp.JTabbedPaneClosable;
-import burp.Tag;
+import burp.tag.Tag;
 import burp.Utils;
 
 import javax.swing.*;

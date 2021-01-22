@@ -1,10 +1,10 @@
-package burp;
+package burp.tag;
 
 public class TagArgument {
     String type;
-    String value;
+    public String value;
 
-    TagArgument(String type, String value) {
+    public TagArgument(String type, String value) {
         this.type = type;
         this.value = value;
     }

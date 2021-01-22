@@ -1,9 +1,6 @@
 package burp.burpimpl;
 
-import burp.Hackvertor;
-import burp.IMessageEditorController;
-import burp.IMessageEditorTab;
-import burp.IMessageEditorTabFactory;
+import burp.*;
 
 public class MessageEditorTabFactory implements IMessageEditorTabFactory {
 

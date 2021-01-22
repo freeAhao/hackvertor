@@ -1,5 +1,7 @@
 package burp;
 
+import burp.tag.Tag;
+import burp.tag.TagArgument;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -321,7 +323,7 @@ public class Hackvertor {
         tags.add(tag);
         for (int j = 0; j < customTags.length(); j++) {
             JSONObject customTag = (JSONObject) customTags.get(j);
-            tag = generateCustomTag(customTag);
+            tag = BurpExtender.getInstance().getTagManage().generateCustomTag(customTag);
             tags.add(tag);
         }
 
@@ -343,7 +345,7 @@ public class Hackvertor {
         ArrayList<Tag> tagsAndCustom = new ArrayList<>(tags);
         for (int j = 0; j < customTags.length(); j++) {
             JSONObject customTag = (JSONObject) customTags.get(j);
-            Tag tag = generateCustomTag(customTag);
+            Tag tag = BurpExtender.getInstance().getTagManage().generateCustomTag(customTag);
             tagsAndCustom.add(tag);
         }
         return tagsAndCustom;

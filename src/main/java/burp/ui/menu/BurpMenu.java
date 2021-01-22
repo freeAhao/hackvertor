@@ -4,6 +4,7 @@ import burp.BurpExtender;
 import burp.Hackvertor;
 import burp.Utils;
 import burp.burpimpl.HttpListener;
+import burp.tag.TagManage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,10 +35,12 @@ public class BurpMenu {
     private JMenu hvMenuBar;
     private HttpListener httpListener;
     private Hackvertor hackvertor;
+    private TagManage tagManage;
 
     public BurpMenu(HttpListener httpListener, Hackvertor hackvertor) {
         this.httpListener = httpListener;
         this.hackvertor = hackvertor;
+        this.tagManage = BurpExtender.getInstance().getTagManage();
     }
 
     public void createMenu(){
@@ -479,9 +482,9 @@ public class BurpMenu {
                     numberOfArgs++;
                 }
                 if (edit) {
-                    BurpExtender.getInstance().updateCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
+                    tagManage.updateCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
                 } else {
-                    BurpExtender.getInstance().createCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
+                    tagManage.createCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
                 }
                 BurpExtender.getInstance().getExtensionPanel().refresh();
                 createTagWindow.dispose();
@@ -548,7 +551,7 @@ public class BurpMenu {
                         JSONArray tags = new JSONArray(tagsJSON);
                         hackvertor.setCustomTags(tags);
                         Utils.alert("All your tags have been replaced from the clipboard");
-                        BurpExtender.getInstance().saveCustomTags();
+                        tagManage.saveCustomTags();
                         listTagsWindow.dispose();
                         showListTagsDialog();
                     } catch (JSONException ex) {
@@ -576,7 +579,7 @@ public class BurpMenu {
                 if (tagCombo.getSelectedItem().toString().equals(customTag.getString("tagName"))) {
                     hackvertor.getCustomTags().remove(i);
                     tagCombo.removeItemAt(tagCombo.getSelectedIndex());
-                    BurpExtender.getInstance().saveCustomTags();
+                    tagManage.saveCustomTags();
                     break;
                 }
             }

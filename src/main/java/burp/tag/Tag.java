@@ -1,4 +1,4 @@
-package burp;
+package burp.tag;
 
 public class Tag {
     public enum Category {
@@ -14,7 +14,7 @@ public class Tag {
     public TagArgument argument3 = null;
     public TagArgument argument4 = null;
 
-    Tag(Category tagCategory, String tagName, boolean hasInput, String tooltip) {
+    public Tag(Category tagCategory, String tagName, boolean hasInput, String tooltip) {
         this.category = tagCategory;
         this.name = tagName;
         this.hasInput = hasInput;

@@ -1,6 +1,8 @@
 package burp.burpimpl;
 
 import burp.*;
+import burp.tag.Tag;
+import burp.tag.TagManage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,7 +95,7 @@ public class ContextMenuFactory implements IContextMenuFactory {
         });
         submenu.add(autodecodeConvert);
         submenu.addSeparator();
-        BurpExtender.getInstance().loadCustomTags();
+        BurpExtender.getInstance().getTagManage().loadCustomTags();
         for (int i = 0; i < Tag.Category.values().length; i++) {
             Tag.Category category = Tag.Category.values()[i];
             JMenu categoryMenu = Utils.createTagMenuForCategory(BurpExtender.getInstance().getHackvertor().getTags(), category, invocation, "", false);
