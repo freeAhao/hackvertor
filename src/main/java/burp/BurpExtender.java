@@ -1,7 +1,9 @@
 package burp;
 
+import burp.burpimpl.HackvertorMessageTab;
+import burp.burpimpl.HackvertorPayloadProcessor;
+import burp.burpimpl.MessageEditorTabFactory;
 import burp.ui.ExtensionPanel;
-import burp.ui.HackvertorPanel;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
@@ -16,12 +18,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
-import java.io.*;
 import java.net.*;
-import java.nio.charset.Charset;
-import java.security.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,7 +34,7 @@ import java.util.List;
 
 import static burp.Convertors.*;
 
-public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, IHttpListener, IExtensionStateListener, IMessageEditorTabFactory {
+public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, IHttpListener, IExtensionStateListener {
     //TODO Unset on unload
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
@@ -56,7 +53,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
     private List<String> NATIVE_LOOK_AND_FEELS = Arrays.asList("GTK","Windows","Aqua","FlatLaf - Burp Light");
     private List<String> DARK_THEMES = Arrays.asList("Darcula","FlatLaf - Burp Dark");
 
-    private Hackvertor hackvertor;
+    private Hackvertor hackvertor = new Hackvertor();
     private ExtensionPanel extensionPanel;
 
     private boolean tagsInProxy = false;
@@ -69,6 +66,8 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
     private JMenuBar burpMenuBar;
     private JMenu hvMenuBar;
 
+    private final MessageEditorTabFactory messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
+
     public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -80,11 +79,6 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         c.ipady = 0;
         c.gridwidth = gridWidth;
         return c;
-    }
-
-    @Override
-    public IMessageEditorTab createNewInstance(IMessageEditorController controller, boolean editable) {
-        return new HackvertorMessageTab(hackvertor);
     }
 
     public static ImageIcon createImageIcon(String path, String description) {
@@ -197,7 +191,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    hackvertor = new Hackvertor();
+                    hackvertor.init();
 	            	stdout.println("Hackvertor v1.6.0");
                     loadCustomTags();
                     registerPayloadProcessors();
@@ -319,7 +313,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
                     });
                     hvMenuBar.add(reportBugMenu);
                     burpMenuBar.add(hvMenuBar);
-                    callbacks.registerMessageEditorTabFactory(BurpExtender.this);
+                    callbacks.registerMessageEditorTabFactory(messageEditorTabFactory);
                 }catch (Exception e){
                     e.printStackTrace();
                 }

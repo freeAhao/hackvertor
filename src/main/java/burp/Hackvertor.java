@@ -13,10 +13,9 @@ public class Hackvertor {
     private JSONArray customTags = new JSONArray();
 
     public Hackvertor(){
-        init();
     }
 
-    void init() {
+    public void init() {
         Tag tag;
         SortedMap m = Charset.availableCharsets();
         Set k = m.keySet();

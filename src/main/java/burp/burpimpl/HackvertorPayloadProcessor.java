@@ -1,5 +1,8 @@
-package burp;
+package burp.burpimpl;
 
+import burp.Convertors;
+import burp.Hackvertor;
+import burp.IIntruderPayloadProcessor;
 import burp.parser.ParseException;
 
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ public class HackvertorPayloadProcessor implements IIntruderPayloadProcessor {
     private final String name;
     private final String tag;
 
-    HackvertorPayloadProcessor(Hackvertor hackvertor, String name, String tag) {
+    public HackvertorPayloadProcessor(Hackvertor hackvertor, String name, String tag) {
         this.hackvertor = hackvertor;
         this.name = name;
         this.tag = tag;
