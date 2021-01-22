@@ -14,7 +14,6 @@ public class HttpListener implements IHttpListener {
     private boolean tagsInScanner = true;
     private boolean tagsInExtensions = true;
     private boolean autoUpdateContentLength = true;
-    private IExtensionHelpers helpers = BurpExtender.helpers;
 
     private boolean isNeedProcess(int toolFlag){
         switch (toolFlag) {
@@ -64,7 +63,7 @@ public class HttpListener implements IHttpListener {
                 break;
             }
 
-            String header_str = helpers.bytesToString(header_name);
+            String header_str = BurpExtender.helpers.bytesToString(header_name);
 
             if (header.equals(header_str)) {
                 int[] offsets = {line_start, headerValueStart, i - 2};
@@ -83,7 +82,7 @@ public class HttpListener implements IHttpListener {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(Arrays.copyOfRange(request, 0, offsets[1]));
-            outputStream.write(helpers.stringToBytes(value));
+            outputStream.write(BurpExtender.helpers.stringToBytes(value));
             outputStream.write(Arrays.copyOfRange(request, offsets[2], request.length));
             return outputStream.toByteArray();
         } catch (IOException e) {
@@ -101,7 +100,7 @@ public class HttpListener implements IHttpListener {
 
         int start = 0;
         while (start < response.length) {
-            start = helpers.indexOf(response, match, true, start, response.length);
+            start = BurpExtender.helpers.indexOf(response, match, true, start, response.length);
             if (start == -1)
                 break;
             matches += 1;
@@ -113,8 +112,8 @@ public class HttpListener implements IHttpListener {
 
 
     public byte[] fixContentLength(byte[] request) {
-        IRequestInfo analyzedRequest = helpers.analyzeRequest(request);
-        if (countMatches(request, helpers.stringToBytes("Content-Length: ")) > 0) {
+        IRequestInfo analyzedRequest = BurpExtender.helpers.analyzeRequest(request);
+        if (countMatches(request, BurpExtender.helpers.stringToBytes("Content-Length: ")) > 0) {
             int start = analyzedRequest.getBodyOffset();
             int contentLength = request.length - start;
             return setHeader(request, "Content-Length", Integer.toString(contentLength));
@@ -131,9 +130,9 @@ public class HttpListener implements IHttpListener {
             return;
         }
         byte[] request = messageInfo.getRequest();
-        if (helpers.indexOf(request, helpers.stringToBytes("<@"), true, 0, request.length) > -1) {
+        if (BurpExtender.helpers.indexOf(request, BurpExtender.helpers.stringToBytes("<@"), true, 0, request.length) > -1) {
             Hackvertor hv = new Hackvertor();
-            request = helpers.stringToBytes(hv.convert(helpers.bytesToString(request)));
+            request = BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(request)));
             if (autoUpdateContentLength) {
                 request = fixContentLength(request);
             }

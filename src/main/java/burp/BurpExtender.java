@@ -1,9 +1,6 @@
 package burp;
 
-import burp.burpimpl.HackvertorMessageTab;
-import burp.burpimpl.HackvertorPayloadProcessor;
-import burp.burpimpl.HttpListener;
-import burp.burpimpl.MessageEditorTabFactory;
+import burp.burpimpl.*;
 import burp.ui.ExtensionPanel;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -35,7 +32,7 @@ import java.util.List;
 
 import static burp.Convertors.*;
 
-public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, IExtensionStateListener {
+public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory {
     //TODO Unset on unload
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
@@ -57,12 +54,12 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
     private Hackvertor hackvertor = new Hackvertor();
     private ExtensionPanel extensionPanel;
 
-    public boolean hvShutdown = false;
     private JMenuBar burpMenuBar;
     private JMenu hvMenuBar;
 
     private final MessageEditorTabFactory messageEditorTabFactory = new MessageEditorTabFactory(hackvertor);
     private final HttpListener httpListener = new HttpListener();
+    private final ExtensionStateListener extensionStateListener = new ExtensionStateListener();
 
     public static GridBagConstraints createConstraints(int x, int y, int gridWidth) {
         GridBagConstraints c = new GridBagConstraints();
@@ -172,7 +169,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         helpers = callbacks.getHelpers();
         stderr = new PrintWriter(callbacks.getStderr(), true);
         stdout = new PrintWriter(callbacks.getStdout(), true);
-        hvShutdown = false;
+        extensionStateListener.setHvShutdown(false);
         tagCodeExecutionKey = generateRandomCodeExecutionKey();
         try {
             ngrams = new Ngrams("/quadgrams.txt");
@@ -182,7 +179,7 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         callbacks.setExtensionName("Hackvertor");
         callbacks.registerContextMenuFactory(this);
         callbacks.registerHttpListener(httpListener);
-        callbacks.registerExtensionStateListener(this);
+        callbacks.registerExtensionStateListener(extensionStateListener);
         Security.addProvider(new BouncyCastleProvider());
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -834,13 +831,6 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
         saveCustomTags();
     }
 
-    public void extensionUnloaded() {
-        hvShutdown = true;
-        burpMenuBar.remove(hvMenuBar);
-        burpMenuBar.repaint();
-        stdout.println("Hackvertor unloaded");
-    }
-
     private static JFrame getBurpFrame() {
         for (Frame f : Frame.getFrames()) {
             if (f.isVisible() && f.getTitle().startsWith(("Burp Suite"))) {
@@ -967,5 +957,20 @@ public class BurpExtender implements IBurpExtender, ITab, IContextMenuFactory, I
 
     public Component getUiComponent() {
         return extensionPanel;
+    }
+
+    private static BurpExtender instance;
+
+    public BurpExtender(){
+        instance = this;
+    }
+
+    public static BurpExtender getInstance() {
+        return instance;
+    }
+
+    public void removeHvMenuBar(){
+        burpMenuBar.remove(hvMenuBar);
+        burpMenuBar.repaint();
     }
 }
