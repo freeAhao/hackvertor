@@ -20,7 +20,6 @@ public class BurpExtender implements IBurpExtender {
     public static IBurpExtenderCallbacks callbacks;
     public static IExtensionHelpers helpers;
     public static String tagCodeExecutionKey = null;
-    public static boolean codeExecutionTagsEnabled = false;
     public static Ngrams ngrams;
     public static PrintWriter stderr;
     public static PrintWriter stdout;

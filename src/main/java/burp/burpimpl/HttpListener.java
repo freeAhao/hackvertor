@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 public class HttpListener implements IHttpListener {
 
+    private static boolean codeExecutionTagsEnabled = true;
     private boolean tagsInProxy = false;
     private boolean tagsInIntruder = true;
     private boolean tagsInRepeater = true;
@@ -192,5 +193,13 @@ public class HttpListener implements IHttpListener {
 
     public void setAutoUpdateContentLength(boolean autoUpdateContentLength) {
         this.autoUpdateContentLength = autoUpdateContentLength;
+    }
+
+    public static boolean isCodeExecutionTagsEnabled() {
+        return codeExecutionTagsEnabled;
+    }
+
+    public static void setCodeExecutionTagsEnabled(boolean codeExecutionTagsEnabled) {
+        HttpListener.codeExecutionTagsEnabled = codeExecutionTagsEnabled;
     }
 }

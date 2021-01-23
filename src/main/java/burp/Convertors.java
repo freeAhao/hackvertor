@@ -1,5 +1,6 @@
 package burp;
 
+import burp.burpimpl.HttpListener;
 import burp.parser.Element;
 import burp.parser.HackvertorParser;
 import burp.parser.ParseException;
@@ -59,7 +60,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static burp.BurpExtender.*;
-import static burp.BurpExtender.tagCodeExecutionKey;
 
 public class Convertors {
 
@@ -2689,7 +2689,7 @@ public class Convertors {
     }
 
     public static String python(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
-        if (!codeExecutionTagsEnabled) {
+        if (!HttpListener.isCodeExecutionTagsEnabled()) {
             return "Code execution tags are disabled by default. Use the menu bar to enable them.";
         }
         if (executionKey == null) {
@@ -2742,7 +2742,7 @@ public class Convertors {
     }
 
     public static String javascript(HashMap<String, String> variableMap, String input, String code, String executionKey, JSONObject customTagOptions) {
-        if (!codeExecutionTagsEnabled) {
+        if (!HttpListener.isCodeExecutionTagsEnabled()) {
             return "Code execution tags are disabled by default. Use the menu bar to enable them.";
         }
         if (executionKey == null) {

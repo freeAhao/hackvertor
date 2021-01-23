@@ -57,13 +57,13 @@ public class BurpMenu {
         burpMenuBar = Utils.getBurpFrame().getJMenuBar();
         hvMenuBar = new JMenu("Hackvertor");
         final JCheckBoxMenuItem codeExecutionMenu = new JCheckBoxMenuItem(
-                "Allow code execution tags", httpListener.isTagsInProxy());
+                "Allow code execution tags", HttpListener.isCodeExecutionTagsEnabled());
         codeExecutionMenu.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (codeExecutionMenu.getState()) {
-                    BurpExtender.codeExecutionTagsEnabled = true;
+                    HttpListener.setCodeExecutionTagsEnabled(true);
                 } else {
-                    BurpExtender.codeExecutionTagsEnabled = false;
+                    HttpListener.setCodeExecutionTagsEnabled(false);
                 }
             }
         });
