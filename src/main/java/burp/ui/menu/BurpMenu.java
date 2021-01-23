@@ -8,6 +8,8 @@ import burp.tag.TagManage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.python.core.Py;
+import org.python.core.PySystemState;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -21,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,6 +39,9 @@ public class BurpMenu {
     private HttpListener httpListener;
     private Hackvertor hackvertor;
     private TagManage tagManage;
+    private JLabel libPathLabel;
+    private JTextField libPathField;
+    private JButton libPathButton;
 
     public BurpMenu(HttpListener httpListener, Hackvertor hackvertor) {
         this.httpListener = httpListener;
@@ -187,7 +193,7 @@ public class BurpMenu {
         }
 
         createTagWindow.setResizable(false);
-        createTagWindow.setPreferredSize(new Dimension(500, 600));
+        createTagWindow.setPreferredSize(new Dimension(500, 800));
         JLabel tagLabel = new JLabel("Tag name");
         tagLabel.setPreferredSize(new Dimension(220, 25));
         JTextField tagNameField = new JTextField();
@@ -240,6 +246,20 @@ public class BurpMenu {
         languageCombo.setPreferredSize(new Dimension(220, 25));
         languageCombo.addItem("JavaScript");
         languageCombo.addItem("Python");
+        languageCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(libPathLabel!=null){
+                    libPathLabel.setVisible(languageCombo.getSelectedItem().equals("Python"));
+                }
+                if(libPathField!=null){
+                    libPathField.setVisible(languageCombo.getSelectedItem().equals("Python"));
+                }
+                if(libPathButton!=null){
+                    libPathButton.setVisible(languageCombo.getSelectedItem().equals("Python"));
+                }
+            }
+        });
 
         if (edit && customTag != null && customTag.has("language")) {
             if (customTag.getString("language").equals("JavaScript")) {
@@ -325,7 +345,29 @@ public class BurpMenu {
         argument2Panel.add(argument2DefaultLabel);
         argument2Panel.add(argument2DefaultValueField);
         createTagPanel.add(argument2Panel);
-
+        libPathLabel = new JLabel("Library Path");
+        libPathField = new JTextField();
+        libPathButton = new JButton("Apply");
+        libPathButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String path = libPathField.getText();
+                if (!new File(path).exists()){
+                    Utils.alert("Path "+path+" not exists");
+                    return;
+                }
+                PySystemState systemState = Py.getSystemState();
+                systemState.path.add(path);
+            }
+        });
+        libPathLabel.setVisible(false);
+        libPathField.setVisible(false);
+        libPathButton.setVisible(false);
+        libPathLabel.setPreferredSize(new Dimension(450, 25));
+        libPathField.setPreferredSize(new Dimension(450, 25));
+        createTagPanel.add(libPathLabel);
+        createTagPanel.add(libPathField);
+        createTagPanel.add(libPathButton);
         JLabel codeLabel = new JLabel("Code (if you end the code with .js/.py it will read a file)");
         codeLabel.setPreferredSize(new Dimension(450, 25));
         codeScroll.setPreferredSize(new Dimension(450, 300));
