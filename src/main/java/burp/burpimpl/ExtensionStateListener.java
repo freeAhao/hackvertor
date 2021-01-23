@@ -2,8 +2,7 @@ package burp.burpimpl;
 
 import burp.BurpExtender;
 import burp.IExtensionStateListener;
-
-import java.io.PrintWriter;
+import burp.ui.menu.BurpMenu;
 
 public class ExtensionStateListener implements IExtensionStateListener {
 
@@ -17,10 +16,16 @@ public class ExtensionStateListener implements IExtensionStateListener {
         this.hvShutdown = hvShutdown;
     }
 
+    private BurpMenu burpMenu;
+
+    public ExtensionStateListener(BurpMenu burpMenu) {
+        this.burpMenu = burpMenu;
+    }
+
     @Override
     public void extensionUnloaded() {
         hvShutdown = true;
-        BurpExtender.getInstance().getBurpMenu().removeHvMenuBar();
+        burpMenu.removeHvMenuBar();
         BurpExtender.stdout.println("Hackvertor unloaded");
     }
 }

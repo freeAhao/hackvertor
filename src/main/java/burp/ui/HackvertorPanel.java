@@ -2,11 +2,11 @@ package burp.ui;
 
 import burp.Convertors;
 import burp.Hackvertor;
-import burp.tag.Tag;
 import burp.Utils;
 import burp.parser.Element;
 import burp.parser.HackvertorParser;
 import burp.parser.ParseException;
+import burp.tag.Tag;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -18,16 +18,20 @@ import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-import static burp.BurpExtender.*;
-import static burp.Convertors.*;
+import static burp.BurpExtender.stderr;
+import static burp.BurpExtender.tagCodeExecutionKey;
+import static burp.Convertors.ascii2hex;
+import static burp.Convertors.calculateRealLen;
 import static java.awt.GridBagConstraints.*;
-import static java.awt.GridBagConstraints.BOTH;
 
 public class HackvertorPanel extends JPanel {
     
@@ -55,7 +59,7 @@ public class HackvertorPanel extends JPanel {
         topBar.setPreferredSize(new Dimension(-1, 110));
         topBar.setMinimumSize(new Dimension(-1, 110));
         JLabel logoLabel;
-        if (isDarkTheme) {
+        if (Theme.isDarkTheme()) {
             logoLabel = new JLabel(Utils.createImageIcon("/images/logo-dark.png", "logo"));
         } else {
             logoLabel = new JLabel(Utils.createImageIcon("/images/logo-light.png", "logo"));
@@ -69,7 +73,7 @@ public class HackvertorPanel extends JPanel {
         hexView.setOpaque(true);
         hexView.setEditable(false);
         hexView.setLineWrap(true);
-        if (!isDarkTheme) {
+        if (!Theme.isDarkTheme()) {
             hexView.setBackground(Color.decode("#FFF5BF"));
             hexView.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
         }
@@ -119,7 +123,7 @@ public class HackvertorPanel extends JPanel {
         final JLabel inputLenLabel = new JLabel("0");
         final JLabel inputRealLenLabel = new JLabel("0");
         inputRealLenLabel.setOpaque(true);
-        if (!isDarkTheme) {
+        if (!Theme.isDarkTheme()) {
             inputRealLenLabel.setForeground(Color.decode("#ffffff"));
             inputRealLenLabel.setBackground(Color.decode("#ff0027"));
             inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
@@ -129,7 +133,7 @@ public class HackvertorPanel extends JPanel {
             inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
         }
         inputLenLabel.setOpaque(true);
-        if (!isDarkTheme) {
+        if (!Theme.isDarkTheme()) {
             inputLenLabel.setBackground(Color.decode("#FFF5BF"));
             inputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
         }
@@ -208,7 +212,7 @@ public class HackvertorPanel extends JPanel {
         final JLabel outputLenLabel = new JLabel("0");
         final JLabel outputRealLenLabel = new JLabel("0");
         outputRealLenLabel.setOpaque(true);
-        if (!isDarkTheme) {
+        if (!Theme.isDarkTheme()) {
             outputRealLenLabel.setForeground(Color.decode("#ffffff"));
             outputRealLenLabel.setBackground(Color.decode("#ff0027"));
             outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
@@ -218,7 +222,7 @@ public class HackvertorPanel extends JPanel {
             outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
         }
         outputLenLabel.setOpaque(true);
-        if (!isDarkTheme) {
+        if (!Theme.isDarkTheme()) {
             outputLenLabel.setBackground(Color.decode("#FFF5BF"));
             outputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
         }
@@ -257,7 +261,7 @@ public class HackvertorPanel extends JPanel {
             }
         });
         final JButton swapButton = new JButton("Swap");
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             swapButton.setBackground(Color.black);
             swapButton.setForeground(Color.white);
         }
@@ -276,7 +280,7 @@ public class HackvertorPanel extends JPanel {
                 inputArea.selectAll();
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             selectInputButton.setForeground(Color.white);
             selectInputButton.setBackground(Color.black);
         }
@@ -288,7 +292,7 @@ public class HackvertorPanel extends JPanel {
                 outputArea.selectAll();
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             selectOutputButton.setForeground(Color.white);
             selectOutputButton.setBackground(Color.black);
         }
@@ -310,7 +314,7 @@ public class HackvertorPanel extends JPanel {
                 inputArea.requestFocus();
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             clearTagsButton.setForeground(Color.white);
             clearTagsButton.setBackground(Color.black);
         }
@@ -323,7 +327,7 @@ public class HackvertorPanel extends JPanel {
                 inputArea.requestFocus();
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             clearButton.setForeground(Color.white);
             clearButton.setBackground(Color.black);
         }
@@ -371,7 +375,7 @@ public class HackvertorPanel extends JPanel {
                 inputArea.setText(Utils.elementSequenceToString(inputElements));
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             pasteInsideButton.setForeground(Color.white);
             pasteInsideButton.setBackground(Color.black);
         }
@@ -382,7 +386,7 @@ public class HackvertorPanel extends JPanel {
                 outputArea.setText(hackvertor.convert(inputArea.getText()));
             }
         });
-        if (!isNativeTheme && !isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             convertButton.setBackground(Color.decode("#005a70"));
             convertButton.setForeground(Color.white);
         }

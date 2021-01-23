@@ -1,6 +1,7 @@
 package burp.burpimpl;
 
 import burp.*;
+import burp.tag.TagManage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,8 +15,13 @@ public class HttpListener implements IHttpListener {
     private boolean tagsInScanner = true;
     private boolean tagsInExtensions = true;
     private boolean autoUpdateContentLength = true;
+    private TagManage tagManage;
 
-    private boolean isNeedProcess(int toolFlag){
+    public HttpListener(TagManage tagManage) {
+        this.tagManage = tagManage;
+    }
+
+    private boolean isNeedProcess(int toolFlag) {
         switch (toolFlag) {
             case IBurpExtenderCallbacks.TOOL_PROXY:
                 if (!tagsInProxy) {
@@ -131,7 +137,7 @@ public class HttpListener implements IHttpListener {
         }
         byte[] request = messageInfo.getRequest();
         if (BurpExtender.helpers.indexOf(request, BurpExtender.helpers.stringToBytes("<@"), true, 0, request.length) > -1) {
-            Hackvertor hv = new Hackvertor();
+            Hackvertor hv = new Hackvertor(tagManage);
             request = BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(request)));
             if (autoUpdateContentLength) {
                 request = fixContentLength(request);

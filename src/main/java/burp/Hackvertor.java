@@ -2,19 +2,22 @@ package burp;
 
 import burp.tag.Tag;
 import burp.tag.TagArgument;
+import burp.tag.TagManage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.Charset;
 import java.util.*;
 
-import static burp.BurpExtender.*;
+import static burp.BurpExtender.tagCodeExecutionKey;
 
 public class Hackvertor {
     private ArrayList<Tag> tags = new ArrayList<Tag>();
     private JSONArray customTags = new JSONArray();
+    private TagManage tagManage;
 
-    public Hackvertor(){
+    public Hackvertor(TagManage tagManage) {
+        this.tagManage = tagManage;
     }
 
     public void init() {
@@ -324,7 +327,7 @@ public class Hackvertor {
         tags.add(tag);
         for (int j = 0; j < customTags.length(); j++) {
             JSONObject customTag = (JSONObject) customTags.get(j);
-            tag = BurpExtender.getInstance().getTagManage().generateCustomTag(customTag);
+            tag = tagManage.generateCustomTag(customTag);
             tags.add(tag);
         }
 
@@ -346,7 +349,7 @@ public class Hackvertor {
         ArrayList<Tag> tagsAndCustom = new ArrayList<>(tags);
         for (int j = 0; j < customTags.length(); j++) {
             JSONObject customTag = (JSONObject) customTags.get(j);
-            Tag tag = BurpExtender.getInstance().getTagManage().generateCustomTag(customTag);
+            Tag tag = tagManage.generateCustomTag(customTag);
             tagsAndCustom.add(tag);
         }
         return tagsAndCustom;

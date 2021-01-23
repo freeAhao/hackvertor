@@ -2,6 +2,7 @@ package burp;
 
 import burp.parser.Element;
 import burp.tag.Tag;
+import burp.ui.Theme;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,7 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static burp.BurpExtender.*;
+import static burp.BurpExtender.helpers;
+import static burp.BurpExtender.stderr;
 
 public class Utils {
 
@@ -61,7 +63,7 @@ public class Utils {
 
             ActionListener actionListener;
             if ((displayCategory != null && displayCategory.equals(tagObj.category)) || (StringUtils.isNotEmpty(searchTag) && (regex ? tagObj.name.matches(searchTag) : tagObj.name.contains(searchTag)))) {
-                if (!isNativeTheme && !isDarkTheme) {
+                if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
                     btn.setBackground(Color.decode("#005a70"));
                     btn.setForeground(Color.white);
                 }

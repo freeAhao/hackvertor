@@ -1,6 +1,7 @@
 package burp.tag;
 
 import burp.BurpExtender;
+import burp.Hackvertor;
 import burp.Utils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -8,11 +9,17 @@ import org.json.JSONObject;
 
 public class TagManage {
 
+    private Hackvertor hackvertor;
+
+    public TagManage(Hackvertor hackvertor) {
+        this.hackvertor = hackvertor;
+    }
+
     public void loadCustomTags() {
         String json = BurpExtender.callbacks.loadExtensionSetting("customTags");
         if (json != null && json.length() > 0) {
             try {
-                BurpExtender.getInstance().getHackvertor().setCustomTags(new JSONArray(json));
+                hackvertor.setCustomTags(new JSONArray(json));
             } catch (JSONException e) {
                 Utils.alert("Failed to load custom tags");
             }
@@ -20,7 +27,7 @@ public class TagManage {
     }
 
     public void saveCustomTags() {
-        BurpExtender.callbacks.saveExtensionSetting("customTags", BurpExtender.getInstance().getHackvertor().getCustomTags().toString());
+        BurpExtender.callbacks.saveExtensionSetting("customTags", hackvertor.getCustomTags().toString());
     }
 
     public void updateCustomTag(String tagName, String language, String code, String argument1, String argument1Type, String argument1DefaultValue, String argument2, String argument2Type, String argument2DefaultValue, int numberOfArgs) {
@@ -42,10 +49,10 @@ public class TagManage {
         }
         tag.put("numberOfArgs", numberOfArgs);
         tag.put("code", code);
-        for (int i = 0; i < BurpExtender.getInstance().getHackvertor().getCustomTags().length(); i++) {
-            JSONObject customTag = (JSONObject) BurpExtender.getInstance().getHackvertor().getCustomTags().get(i);
+        for (int i = 0; i < hackvertor.getCustomTags().length(); i++) {
+            JSONObject customTag = (JSONObject) hackvertor.getCustomTags().get(i);
             if (tagName.equals(customTag.getString("tagName"))) {
-                BurpExtender.getInstance().getHackvertor().getCustomTags().put(i, tag);
+                hackvertor.getCustomTags().put(i, tag);
                 saveCustomTags();
                 break;
             }
@@ -72,7 +79,7 @@ public class TagManage {
         }
         tag.put("numberOfArgs", numberOfArgs);
         tag.put("code", code);
-        BurpExtender.getInstance().getHackvertor().getCustomTags().put(tag);
+        hackvertor.getCustomTags().put(tag);
         saveCustomTags();
     }
 

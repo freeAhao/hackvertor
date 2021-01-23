@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static burp.BurpExtender.isDarkTheme;
 import static burp.BurpExtender.stderr;
 
 public class SearchPanel extends JPanel {
@@ -77,7 +76,7 @@ public class SearchPanel extends JPanel {
 
     void search(String findText, JTextArea element, Boolean regex) {
         try {
-            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(isDarkTheme ? Color.gray : Color.yellow);
+            Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Theme.isDarkTheme() ? Color.gray : Color.yellow);
             element.getHighlighter().removeAllHighlights();
             if (findText.length() == 0) {
                 return;

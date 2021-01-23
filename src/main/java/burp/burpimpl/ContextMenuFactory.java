@@ -3,6 +3,7 @@ package burp.burpimpl;
 import burp.*;
 import burp.tag.Tag;
 import burp.tag.TagManage;
+import burp.ui.ExtensionPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +17,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ContextMenuFactory implements IContextMenuFactory {
-    private boolean filterContext(IContextMenuInvocation invocation){
+
+    private ExtensionPanel extensionPanel;
+    private TagManage tagManage;
+    private Hackvertor hackvertor;
+
+    public ContextMenuFactory(ExtensionPanel extensionPanel, TagManage tagManage, Hackvertor hackvertor) {
+        this.extensionPanel = extensionPanel;
+        this.tagManage = tagManage;
+        this.hackvertor = hackvertor;
+    }
+
+    private boolean filterContext(IContextMenuInvocation invocation) {
         switch (invocation.getInvocationContext()) {
             case IContextMenuInvocation.CONTEXT_INTRUDER_PAYLOAD_POSITIONS:
             case IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST:
@@ -40,9 +52,9 @@ public class ContextMenuFactory implements IContextMenuFactory {
         JMenu submenu = new JMenu("Hackvertor");
         Action hackvertorAction;
         if (bounds[0] == bounds[1] && invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_RESPONSE) {
-            hackvertorAction = new HackvertorAction("Send response body to Hackvertor", BurpExtender.getInstance().getExtensionPanel(), invocation);
+            hackvertorAction = new HackvertorAction("Send response body to Hackvertor", extensionPanel, invocation);
         } else {
-            hackvertorAction = new HackvertorAction("Send to Hackvertor", BurpExtender.getInstance().getExtensionPanel(), invocation);
+            hackvertorAction = new HackvertorAction("Send to Hackvertor", extensionPanel, invocation);
         }
         JMenuItem sendToHackvertor = new JMenuItem(hackvertorAction);
         submenu.add(sendToHackvertor);
@@ -54,7 +66,7 @@ public class ContextMenuFactory implements IContextMenuFactory {
 
         JMenuItem copyUrl = new JMenuItem("Copy URL");
         copyUrl.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
+            Hackvertor hv = new Hackvertor(tagManage);
             URL url = BurpExtender.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest())))).getUrl();
             StringSelection stringSelection = null;
             stringSelection = new StringSelection(Utils.buildUrl(url));
@@ -65,7 +77,7 @@ public class ContextMenuFactory implements IContextMenuFactory {
 
         JMenuItem convert = new JMenuItem("Convert tags");
         convert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
+            Hackvertor hv = new Hackvertor(tagManage);
             if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
                 byte[] message = invocation.getSelectedMessages()[0].getRequest();
                 invocation.getSelectedMessages()[0].setRequest(BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(message))));
@@ -74,7 +86,7 @@ public class ContextMenuFactory implements IContextMenuFactory {
         submenu.add(convert);
         JMenuItem autodecodeConvert = new JMenuItem("Auto decode & Convert");
         autodecodeConvert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor();
+            Hackvertor hv = new Hackvertor(tagManage);
             if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
                 byte[] message = invocation.getSelectedMessages()[0].getRequest();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -95,10 +107,10 @@ public class ContextMenuFactory implements IContextMenuFactory {
         });
         submenu.add(autodecodeConvert);
         submenu.addSeparator();
-        BurpExtender.getInstance().getTagManage().loadCustomTags();
+        tagManage.loadCustomTags();
         for (int i = 0; i < Tag.Category.values().length; i++) {
             Tag.Category category = Tag.Category.values()[i];
-            JMenu categoryMenu = Utils.createTagMenuForCategory(BurpExtender.getInstance().getHackvertor().getTags(), category, invocation, "", false);
+            JMenu categoryMenu = Utils.createTagMenuForCategory(hackvertor.getTags(), category, invocation, "", false);
             submenu.add(categoryMenu);
         }
         menu.add(submenu);

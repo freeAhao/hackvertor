@@ -5,6 +5,8 @@ import burp.Hackvertor;
 import burp.Utils;
 import burp.burpimpl.HttpListener;
 import burp.tag.TagManage;
+import burp.ui.ExtensionPanel;
+import burp.ui.Theme;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,11 +44,13 @@ public class BurpMenu {
     private JLabel libPathLabel;
     private JTextField libPathField;
     private JButton libPathButton;
+    private ExtensionPanel extensionPanel;
 
-    public BurpMenu(HttpListener httpListener, Hackvertor hackvertor) {
+    public BurpMenu(HttpListener httpListener, Hackvertor hackvertor, TagManage tagManage, ExtensionPanel extensionPanel) {
         this.httpListener = httpListener;
         this.hackvertor = hackvertor;
-        this.tagManage = BurpExtender.getInstance().getTagManage();
+        this.tagManage = tagManage;
+        this.extensionPanel = extensionPanel;
     }
 
     public void createMenu(){
@@ -374,7 +378,7 @@ public class BurpMenu {
         createTagPanel.add(codeLabel);
         createTagPanel.add(codeScroll);
         JButton cancelButton = new JButton("Cancel");
-        if (!BurpExtender.isNativeTheme && !BurpExtender.isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             cancelButton.setBackground(Color.decode("#005a70"));
             cancelButton.setForeground(Color.white);
         }
@@ -435,7 +439,7 @@ public class BurpMenu {
                 tag.put("code", code);
                 JSONObject customTagOptions = new JSONObject();
                 customTagOptions.put("customTag", tag);
-                Hackvertor hv = new Hackvertor();
+                Hackvertor hv = new Hackvertor(tagManage);
                 ArrayList<String> args = new ArrayList<>();
                 if (numberOfArgs == 0) {
                     customTagOptions = null;
@@ -528,11 +532,11 @@ public class BurpMenu {
                 } else {
                     tagManage.createCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
                 }
-                BurpExtender.getInstance().getExtensionPanel().refresh();
+                extensionPanel.refresh();
                 createTagWindow.dispose();
             }
         });
-        if (!BurpExtender.isNativeTheme && !BurpExtender.isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             createButton.setBackground(Color.decode("#005a70"));
             createButton.setForeground(Color.white);
             testButton.setBackground(Color.decode("#005a70"));
@@ -625,9 +629,9 @@ public class BurpMenu {
                     break;
                 }
             }
-            BurpExtender.getInstance().getExtensionPanel().refresh();
+            extensionPanel.refresh();
         });
-        if (!BurpExtender.isNativeTheme && !BurpExtender.isDarkTheme) {
+        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
             deleteButton.setBackground(Color.decode("#005a70"));
             deleteButton.setForeground(Color.white);
             editButton.setBackground(Color.decode("#005a70"));
