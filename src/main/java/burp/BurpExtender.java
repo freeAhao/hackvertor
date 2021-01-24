@@ -64,15 +64,13 @@ public class BurpExtender implements IBurpExtender {
         tagManage = new TagManage(hackvertor);
         hackvertor = new Hackvertor(tagManage);
         callbacks.setExtensionName("Hackvertor");
-        contextMenuFactory = new ContextMenuFactory(extensionPanel, tagManage, hackvertor);
-        callbacks.registerContextMenuFactory(contextMenuFactory);
+        uiInit();
         httpListener = new HttpListener(tagManage);
         callbacks.registerHttpListener(httpListener);
         extensionStateListener = new ExtensionStateListener(burpMenu);
         extensionStateListener.setHvShutdown(false);
         callbacks.registerExtensionStateListener(extensionStateListener);
         Security.addProvider(new BouncyCastleProvider());
-        uiInit();
     }
 
     private void loadNgrams() {
@@ -94,6 +92,8 @@ public class BurpExtender implements IBurpExtender {
                     registerSuiteTab();
                     createBurpMenu();
                     registerMessageEditorTabFactory();
+                    contextMenuFactory = new ContextMenuFactory(extensionPanel, tagManage, hackvertor);
+                    callbacks.registerContextMenuFactory(contextMenuFactory);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -107,7 +107,7 @@ public class BurpExtender implements IBurpExtender {
     }
 
     private void registerSuiteTab() {
-        tab = new Tab(extensionPanel, hackvertor);
+        tab = new Tab(extensionPanel);
         callbacks.addSuiteTab(tab);
     }
 

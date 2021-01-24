@@ -20,7 +20,7 @@ public class HackvertorMessageTab implements IMessageEditorTab {
     private Boolean changed = false;
 
     public HackvertorMessageTab(Hackvertor hackvertor) {
-        hackvertorPanel = new HackvertorPanel(hackvertor, false);
+        hackvertorPanel = new HackvertorPanel(hackvertor);
         hackvertorPanel.getInputArea().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

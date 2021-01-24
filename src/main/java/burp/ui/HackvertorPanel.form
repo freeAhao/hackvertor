@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="burp.ui.TestHackvertorPanel">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="burp.ui.HackvertorPanel">
   <grid id="27dc6" binding="rootPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
@@ -73,28 +73,30 @@
                               </component>
                             </children>
                           </scrollpane>
-                          <component id="89fe2" class="javax.swing.JLabel">
+                          <component id="89fe2" class="javax.swing.JLabel" binding="inputLabel">
                             <constraints>
                               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <text value="Input:"/>
                             </properties>
                           </component>
-                          <component id="ace6" class="javax.swing.JLabel">
+                          <component id="ace6" class="javax.swing.JLabel" binding="inputRealLenLabel">
                             <constraints>
                               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <opaque value="true"/>
+                              <text value="0"/>
                             </properties>
                           </component>
-                          <component id="1848b" class="javax.swing.JLabel">
+                          <component id="1848b" class="javax.swing.JLabel" binding="inputLenLabel">
                             <constraints>
                               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <opaque value="true"/>
+                              <text value="0"/>
                             </properties>
                           </component>
                           <hspacer id="ffe58">
@@ -129,28 +131,30 @@
                               </component>
                             </children>
                           </scrollpane>
-                          <component id="47e3b" class="javax.swing.JLabel">
+                          <component id="47e3b" class="javax.swing.JLabel" binding="outputLabel">
                             <constraints>
                               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <text value="Output:"/>
                             </properties>
                           </component>
-                          <component id="8de72" class="javax.swing.JLabel">
+                          <component id="8de72" class="javax.swing.JLabel" binding="outputRealLenLabel">
                             <constraints>
                               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <opaque value="true"/>
+                              <text value="0"/>
                             </properties>
                           </component>
-                          <component id="760e6" class="javax.swing.JLabel">
+                          <component id="760e6" class="javax.swing.JLabel" binding="outputLenLabel">
                             <constraints>
                               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                             </constraints>
                             <properties>
-                              <text value="Label"/>
+                              <opaque value="true"/>
+                              <text value="0"/>
                             </properties>
                           </component>
                           <hspacer id="e4e5c">
@@ -228,7 +232,7 @@
                           <text value="Convert"/>
                         </properties>
                       </component>
-                      <component id="fba96" class="javax.swing.JButton" binding="pasteInsideTagsButton" default-binding="true">
+                      <component id="fba96" class="javax.swing.JButton" binding="pasteInsideButton">
                         <constraints>
                           <grid row="0" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -252,6 +256,7 @@
                         <properties>
                           <editable value="false"/>
                           <lineWrap value="true"/>
+                          <visible value="false"/>
                         </properties>
                       </component>
                     </children>
@@ -260,23 +265,16 @@
               </grid>
             </children>
           </splitpane>
-          <tabbedpane id="8d6ee" binding="tabbedPane1" default-binding="true">
+          <tabbedpane id="8d6ee" binding="tabs" default-binding="true">
             <constraints>
               <splitpane position="left"/>
             </constraints>
-            <properties/>
+            <properties>
+              <maximumSize width="0" height="0"/>
+              <minimumSize width="0" height="0"/>
+            </properties>
             <border type="none"/>
-            <children>
-              <grid id="8e08b" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                <margin top="0" left="0" bottom="0" right="0"/>
-                <constraints>
-                  <tabbedpane title="Untitled"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children/>
-              </grid>
-            </children>
+            <children/>
           </tabbedpane>
         </children>
       </splitpane>

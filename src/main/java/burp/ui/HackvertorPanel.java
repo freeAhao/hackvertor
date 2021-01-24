@@ -7,11 +7,15 @@ import burp.parser.Element;
 import burp.parser.HackvertorParser;
 import burp.parser.ParseException;
 import burp.tag.Tag;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
@@ -25,69 +29,247 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static burp.BurpExtender.stderr;
 import static burp.BurpExtender.tagCodeExecutionKey;
 import static burp.Convertors.ascii2hex;
 import static burp.Convertors.calculateRealLen;
-import static java.awt.GridBagConstraints.*;
 
-public class HackvertorPanel extends JPanel {
-    
-    private final Hackvertor hackvertor;
-    private final JTextArea inputArea;
-    private final JTextArea outputArea;
+public class HackvertorPanel extends JComponent {
+    private JPanel rootPanel;
+    private JTextArea hexView;
+    private JButton clearButton;
+    private JButton clearTagsButton;
+    private JButton swapButton;
+    private JButton selectInputButton;
+    private JButton selectOutputButton;
+    private JButton convertButton;
+    private JButton pasteInsideButton;
+    private JTextArea inputArea;
+    private JTextArea outputArea;
+    private JSplitPane sPanel3;
+    private JSplitPane sPanel2;
+    private JSplitPane sPanel1;
     private JTabbedPane tabs;
-    
-    public HackvertorPanel(Hackvertor hackvertor, boolean showLogo){
-        super(new GridBagLayout());
-        this.hackvertor = hackvertor;
-        this.inputArea = new JTextArea();
-        this.outputArea = new JTextArea();
+    private JLabel inputLabel;
+    private JLabel inputLenLabel;
+    private JLabel inputRealLenLabel;
+    private JLabel outputLabel;
+    private JLabel outputLenLabel;
+    private JLabel outputRealLenLabel;
+    private Hackvertor hackvertor;
 
-        buildPanel(showLogo);
+
+    public static JScrollPane createTagButtons(List<Tag> tags, final JTextArea inputArea, Tag.Category displayCategory, String searchTag, Boolean regex) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JScrollPane scrollPane = new JScrollPane(panel);
+        for (final Tag tagObj : tags) {
+            final JButton btn = new JButton(tagObj.name);
+            btn.setToolTipText(tagObj.tooltip);
+
+            ActionListener actionListener;
+            if ((displayCategory != null && displayCategory.equals(tagObj.category)) || (StringUtils.isNotEmpty(searchTag) && (regex ? tagObj.name.matches(searchTag) : tagObj.name.contains(searchTag)))) {
+                if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
+                    btn.setBackground(Color.decode("#005a70"));
+                    btn.setForeground(Color.white);
+                }
+                btn.putClientProperty("tag", tagObj);
+
+                actionListener = new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String selectedText = inputArea.getSelectedText();
+                        if (selectedText == null) {
+                            selectedText = "";
+                        }
+                        String[] tagStartEnd = Convertors.generateTagStartEnd(tagObj);
+                        String tagStart = tagStartEnd[0];
+                        String tagEnd = tagStartEnd[1];
+                        inputArea.replaceSelection(tagStart + selectedText + tagEnd);
+                        Highlighter.Highlight[] highlights = inputArea.getHighlighter().getHighlights();
+                        if (highlights.length > 0) {
+                            for (Highlighter.Highlight highlight : highlights) {
+                                inputArea.select(highlight.getStartOffset(), highlight.getEndOffset());
+                                selectedText = inputArea.getSelectedText();
+                                if (selectedText != null) {
+                                    tagStartEnd = Convertors.generateTagStartEnd(tagObj);
+                                    tagStart = tagStartEnd[0];
+                                    tagEnd = tagStartEnd[1];
+                                    inputArea.replaceSelection(tagStart + selectedText + tagEnd);
+                                }
+                            }
+                        }
+                        //TODO Auto convert input
+//                    outputArea.setText(convert(inputArea.getText()));
+//                    outputArea.selectAll();
+                    }
+                };
+
+                btn.addActionListener(actionListener);
+                panel.add(btn);
+            }
+        }
+        return scrollPane;
     }
 
-    public JTabbedPane getTabs() {
+    public JTabbedPane buildTabbedPane() {
+        JTabbedPane tabs = this.tabs;
+
+        for (int i = 0; i < Tag.Category.values().length; i++) {
+            tabs.addTab(Tag.Category.values()[i].name(), createTagButtons(hackvertor.getTags(), inputArea, Tag.Category.values()[i], null, false));
+        }
+
+        tabs.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int tabIndex = tabs.getSelectedIndex();
+                if (tabs.getTitleAt(tabIndex).equals("Custom")) {
+                    tabs.setComponentAt(tabIndex, Utils.createButtons(hackvertor.getTags(), inputArea, Tag.Category.Custom, null, false));
+                }
+            }
+        });
+
+        tabs.addTab("Search", new SearchPanel(hackvertor, this));
+
+        tabs.setAutoscrolls(true);
+        tabs.setSelectedIndex(4);
+
         return tabs;
     }
 
-    private void buildPanel(boolean showLogo){
-        tabs = buildTabbedPane();
-        JPanel topBar = new JPanel(new GridBagLayout());
-        topBar.setPreferredSize(new Dimension(-1, 110));
-        topBar.setMinimumSize(new Dimension(-1, 110));
-        JLabel logoLabel;
-        if (Theme.isDarkTheme()) {
-            logoLabel = new JLabel(Utils.createImageIcon("/images/logo-dark.png", "logo"));
-        } else {
-            logoLabel = new JLabel(Utils.createImageIcon("/images/logo-light.png", "logo"));
-        }
-        if (!showLogo) {
-            logoLabel = new JLabel();
-        }
-        final JTextArea hexView = new JTextArea();
-//        hexView.setFont(new Font("Courier New", Font.PLAIN, 12));
-        hexView.setRows(0);
-        hexView.setOpaque(true);
+    public HackvertorPanel(Hackvertor hackvertor) {
+        this.hackvertor = hackvertor;
+        $$$setupUI$$$();
+        createUIComponents();
+        buildTabbedPane();
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        rootPanel = new JPanel();
+        rootPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        sPanel1 = new JSplitPane();
+        sPanel1.setOrientation(0);
+        rootPanel.add(sPanel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
+        sPanel2 = new JSplitPane();
+        sPanel2.setMinimumSize(new Dimension(0, 0));
+        sPanel2.setOrientation(0);
+        sPanel1.setRightComponent(sPanel2);
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        sPanel2.setLeftComponent(panel1);
+        sPanel3 = new JSplitPane();
+        sPanel3.setLastDividerLocation(-1);
+        panel1.add(sPanel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridLayoutManager(2, 4, new Insets(0, 0, 0, 0), -1, -1));
+        sPanel3.setLeftComponent(panel2);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setHorizontalScrollBarPolicy(31);
+        panel2.add(scrollPane1, new GridConstraints(1, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        inputArea = new JTextArea();
+        inputArea.setLineWrap(true);
+        scrollPane1.setViewportView(inputArea);
+        inputLabel = new JLabel();
+        inputLabel.setText("Input:");
+        panel2.add(inputLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        inputRealLenLabel = new JLabel();
+        inputRealLenLabel.setOpaque(true);
+        inputRealLenLabel.setText("0");
+        panel2.add(inputRealLenLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        inputLenLabel = new JLabel();
+        inputLenLabel.setOpaque(true);
+        inputLenLabel.setText("0");
+        panel2.add(inputLenLabel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel2.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(2, 4, new Insets(0, 0, 0, 0), -1, -1));
+        sPanel3.setRightComponent(panel3);
+        final JScrollPane scrollPane2 = new JScrollPane();
+        scrollPane2.setHorizontalScrollBarPolicy(31);
+        panel3.add(scrollPane2, new GridConstraints(1, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        outputArea = new JTextArea();
+        outputArea.setLineWrap(true);
+        scrollPane2.setViewportView(outputArea);
+        outputLabel = new JLabel();
+        outputLabel.setText("Output:");
+        panel3.add(outputLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        outputRealLenLabel = new JLabel();
+        outputRealLenLabel.setOpaque(true);
+        outputRealLenLabel.setText("0");
+        panel3.add(outputRealLenLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        outputLenLabel = new JLabel();
+        outputLenLabel.setOpaque(true);
+        outputLenLabel.setText("0");
+        panel3.add(outputLenLabel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel3.add(spacer2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        sPanel2.setRightComponent(panel4);
+        final JPanel panel5 = new JPanel();
+        panel5.setLayout(new GridLayoutManager(1, 7, new Insets(0, 0, 0, 0), -1, -1));
+        panel4.add(panel5, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        clearButton = new JButton();
+        clearButton.setText("Clear");
+        panel5.add(clearButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        clearTagsButton = new JButton();
+        clearTagsButton.setText("Clear Tags");
+        panel5.add(clearTagsButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        swapButton = new JButton();
+        swapButton.setText("Swap");
+        panel5.add(swapButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        selectInputButton = new JButton();
+        selectInputButton.setText("Select Input");
+        panel5.add(selectInputButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        selectOutputButton = new JButton();
+        selectOutputButton.setText("Select Output");
+        panel5.add(selectOutputButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        convertButton = new JButton();
+        convertButton.setText("Convert");
+        panel5.add(convertButton, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        pasteInsideButton = new JButton();
+        pasteInsideButton.setText("Paste Inside Tags");
+        panel5.add(pasteInsideButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JScrollPane scrollPane3 = new JScrollPane();
+        scrollPane3.setHorizontalScrollBarPolicy(31);
+        panel4.add(scrollPane3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        hexView = new JTextArea();
         hexView.setEditable(false);
         hexView.setLineWrap(true);
-        if (!Theme.isDarkTheme()) {
-            hexView.setBackground(Color.decode("#FFF5BF"));
-            hexView.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
-        }
         hexView.setVisible(false);
-        final JScrollPane hexScroll = new JScrollPane(hexView);
-        hexScroll.setPreferredSize(new Dimension(-1, 100));
-        hexScroll.setMinimumSize(new Dimension(-1, 100));
-        JPanel buttonsPanel = new JPanel(new GridLayout(1, 0, 10, 0));
-//        inputArea.setFont(new Font("Courier New", Font.PLAIN, 12));
-        inputArea.setLineWrap(true);
-        inputArea.setRows(0);
+        scrollPane3.setViewportView(hexView);
+        tabs = new JTabbedPane();
+        tabs.setMaximumSize(new Dimension(0, 0));
+        tabs.setMinimumSize(new Dimension(0, 0));
+        sPanel1.setLeftComponent(tabs);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return rootPanel;
+    }
+
+    public JTextArea getInputArea() {
+        return inputArea;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+
         final UndoManager undo = new UndoManager();
         Document doc = inputArea.getDocument();
-
         doc.addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -118,27 +300,8 @@ public class HackvertorPanel extends JPanel {
                 });
 
         inputArea.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
-        final JScrollPane inputScroll = new JScrollPane(inputArea);
-        final JLabel inputLabel = new JLabel("Input:");
-        final JLabel inputLenLabel = new JLabel("0");
-        final JLabel inputRealLenLabel = new JLabel("0");
-        inputRealLenLabel.setOpaque(true);
-        if (!Theme.isDarkTheme()) {
-            inputRealLenLabel.setForeground(Color.decode("#ffffff"));
-            inputRealLenLabel.setBackground(Color.decode("#ff0027"));
-            inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
-        } else {
-            inputRealLenLabel.setForeground(Color.decode("#000000"));
-            inputRealLenLabel.setBackground(Color.decode("#b6b6b6"));
-            inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
-        }
-        inputLenLabel.setOpaque(true);
-        if (!Theme.isDarkTheme()) {
-            inputLenLabel.setBackground(Color.decode("#FFF5BF"));
-            inputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
-        }
-        final JTextArea outputArea = new JTextArea();
-//        outputArea.setFont(new Font("Courier New", Font.PLAIN, 12));
+
+
         DocumentListener documentListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
                 updateLen(documentEvent);
@@ -192,8 +355,7 @@ public class HackvertorPanel extends JPanel {
                 }
             }
         });
-        outputArea.setRows(0);
-        outputArea.setLineWrap(true);
+
         outputArea.addCaretListener(new CaretListener() {
             public void caretUpdate(CaretEvent e) {
                 String selectedText = outputArea.getSelectedText();
@@ -207,25 +369,8 @@ public class HackvertorPanel extends JPanel {
                 }
             }
         });
-        final JScrollPane outputScroll = new JScrollPane(outputArea);
-        final JLabel outputLabel = new JLabel("Output:");
-        final JLabel outputLenLabel = new JLabel("0");
-        final JLabel outputRealLenLabel = new JLabel("0");
-        outputRealLenLabel.setOpaque(true);
-        if (!Theme.isDarkTheme()) {
-            outputRealLenLabel.setForeground(Color.decode("#ffffff"));
-            outputRealLenLabel.setBackground(Color.decode("#ff0027"));
-            outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
-        } else {
-            outputRealLenLabel.setForeground(Color.decode("#000000"));
-            outputRealLenLabel.setBackground(Color.decode("#b6b6b6"));
-            outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
-        }
-        outputLenLabel.setOpaque(true);
-        if (!Theme.isDarkTheme()) {
-            outputLenLabel.setBackground(Color.decode("#FFF5BF"));
-            outputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
-        }
+
+
         DocumentListener documentListener2 = new DocumentListener() {
             public void changedUpdate(DocumentEvent documentEvent) {
                 updateLen(documentEvent);
@@ -260,11 +405,7 @@ public class HackvertorPanel extends JPanel {
                 }
             }
         });
-        final JButton swapButton = new JButton("Swap");
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            swapButton.setBackground(Color.black);
-            swapButton.setForeground(Color.white);
-        }
+
         swapButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 inputArea.setText(outputArea.getText());
@@ -272,32 +413,18 @@ public class HackvertorPanel extends JPanel {
                 inputArea.requestFocus();
             }
         });
-
-        final JButton selectInputButton = new JButton("Select input");
         selectInputButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 inputArea.requestFocus();
                 inputArea.selectAll();
             }
         });
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            selectInputButton.setForeground(Color.white);
-            selectInputButton.setBackground(Color.black);
-        }
-
-        final JButton selectOutputButton = new JButton("Select output");
         selectOutputButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 outputArea.requestFocus();
                 outputArea.selectAll();
             }
         });
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            selectOutputButton.setForeground(Color.white);
-            selectOutputButton.setBackground(Color.black);
-        }
-
-        final JButton clearTagsButton = new JButton("Clear tags");
         clearTagsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String input = inputArea.getText();
@@ -306,7 +433,7 @@ public class HackvertorPanel extends JPanel {
                             .filter(element -> element instanceof Element.TextElement)
                             .map(element -> ((Element.TextElement) element).getContent())
                             .collect(Collectors.joining());
-                }catch (ParseException ex){
+                } catch (ParseException ex) {
                     //TODO Better error handling.
                     ex.printStackTrace();
                 }
@@ -314,12 +441,6 @@ public class HackvertorPanel extends JPanel {
                 inputArea.requestFocus();
             }
         });
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            clearTagsButton.setForeground(Color.white);
-            clearTagsButton.setBackground(Color.black);
-        }
-
-        final JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 inputArea.setText("");
@@ -327,12 +448,6 @@ public class HackvertorPanel extends JPanel {
                 inputArea.requestFocus();
             }
         });
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            clearButton.setForeground(Color.white);
-            clearButton.setBackground(Color.black);
-        }
-
-        final JButton pasteInsideButton = new JButton("Paste inside tags");
         pasteInsideButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 outputArea.setText("");
@@ -344,7 +459,7 @@ public class HackvertorPanel extends JPanel {
                     unsupportedFlavorException.printStackTrace();
                 }
 
-                if(StringUtils.isEmpty(clipboard)) return;
+                if (StringUtils.isEmpty(clipboard)) return;
 
                 LinkedList<Element> inputElements;
                 try {
@@ -352,22 +467,22 @@ public class HackvertorPanel extends JPanel {
                     inputElements = HackvertorParser.parse(input);
                     for (int i = 0; i < inputElements.size(); i++) {
                         Element curr = inputElements.get(i);
-                        Element next = i != inputElements.size() - 1 ? inputElements.get(i+1) : null;
-                        Element secondNext = i != inputElements.size() - 2 ? inputElements.get(i+2) : null;
-                        if(curr instanceof Element.StartTag){
-                            if(next instanceof Element.EndTag
-                                && ((Element.StartTag) curr).getIdentifier()
+                        Element next = i != inputElements.size() - 1 ? inputElements.get(i + 1) : null;
+                        Element secondNext = i != inputElements.size() - 2 ? inputElements.get(i + 2) : null;
+                        if (curr instanceof Element.StartTag) {
+                            if (next instanceof Element.EndTag
+                                    && ((Element.StartTag) curr).getIdentifier()
                                     .equalsIgnoreCase(((Element.EndTag) next).getIdentifier())) {
                                 inputElements.add(i + 1, new Element.TextElement(clipboard));
-                            }else if(next instanceof Element.TextElement && secondNext instanceof Element.EndTag){
-                                if(((Element.StartTag) curr).getIdentifier()
-                                        .equalsIgnoreCase(((Element.EndTag) secondNext).getIdentifier())){
+                            } else if (next instanceof Element.TextElement && secondNext instanceof Element.EndTag) {
+                                if (((Element.StartTag) curr).getIdentifier()
+                                        .equalsIgnoreCase(((Element.EndTag) secondNext).getIdentifier())) {
                                     ((Element.TextElement) next).setContent(clipboard);
                                 }
                             }
                         }
                     }
-                }catch (ParseException ex){
+                } catch (ParseException ex) {
                     //TODO Better error handling.
                     ex.printStackTrace();
                     return;
@@ -375,123 +490,55 @@ public class HackvertorPanel extends JPanel {
                 inputArea.setText(Utils.elementSequenceToString(inputElements));
             }
         });
-        if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
-            pasteInsideButton.setForeground(Color.white);
-            pasteInsideButton.setBackground(Color.black);
-        }
-
-        final JButton convertButton = new JButton("Convert");
         convertButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 outputArea.setText(hackvertor.convert(inputArea.getText()));
             }
         });
+
+        if (!Theme.isDarkTheme()) {
+            inputLenLabel.setBackground(Color.decode("#FFF5BF"));
+            inputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
+            inputRealLenLabel.setForeground(Color.decode("#ffffff"));
+            inputRealLenLabel.setBackground(Color.decode("#ff0027"));
+            inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
+            outputLenLabel.setBackground(Color.decode("#FFF5BF"));
+            outputLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
+            outputRealLenLabel.setForeground(Color.decode("#ffffff"));
+            outputRealLenLabel.setBackground(Color.decode("#ff0027"));
+            outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
+            hexView.setBackground(Color.decode("#FFF5BF"));
+            hexView.setBorder(BorderFactory.createLineBorder(Color.decode("#FF9900"), 1));
+        } else {
+            inputRealLenLabel.setForeground(Color.decode("#000000"));
+            inputRealLenLabel.setBackground(Color.decode("#b6b6b6"));
+            inputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
+            outputRealLenLabel.setForeground(Color.decode("#000000"));
+            outputRealLenLabel.setBackground(Color.decode("#b6b6b6"));
+            outputRealLenLabel.setBorder(BorderFactory.createLineBorder(Color.decode("#CCCCCC"), 1));
+        }
         if (!Theme.isNativeTheme() && !Theme.isDarkTheme()) {
+            swapButton.setBackground(Color.black);
+            swapButton.setForeground(Color.white);
+            selectInputButton.setForeground(Color.white);
+            selectInputButton.setBackground(Color.black);
+            selectOutputButton.setForeground(Color.white);
+            selectOutputButton.setBackground(Color.black);
+            clearTagsButton.setForeground(Color.white);
+            clearTagsButton.setBackground(Color.black);
+            clearButton.setForeground(Color.white);
+            clearButton.setBackground(Color.black);
+            pasteInsideButton.setForeground(Color.white);
+            pasteInsideButton.setBackground(Color.black);
             convertButton.setBackground(Color.decode("#005a70"));
             convertButton.setForeground(Color.white);
         }
-        buttonsPanel.add(clearButton);
-        buttonsPanel.add(clearTagsButton);
-        buttonsPanel.add(swapButton);
-        buttonsPanel.add(selectInputButton);
-        buttonsPanel.add(selectOutputButton);
-        buttonsPanel.add(pasteInsideButton);
-        buttonsPanel.add(convertButton);
-        GridBagConstraints c = Utils.createConstraints(1, 0, 1);
-        c.anchor = FIRST_LINE_END;
-        c.ipadx = 20;
-        c.ipady = 20;
-        topBar.add(logoLabel, c);
-        c = Utils.createConstraints(0, 0, 1);
-        c.anchor = FIRST_LINE_START;
-        c.fill = BOTH;
-        c.weightx = 1.0;
-        c.weighty = 1;
-        topBar.add(tabs, c);
-        c = Utils.createConstraints(0, 0, 2);
-        c.anchor = FIRST_LINE_START;
-        c.fill = BOTH;
-        c.weightx = 1.0;
-        this.add(topBar, c);
-        JPanel inputLabelsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        c = Utils.createConstraints(0, 0, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = GridBagConstraints.WEST;
-        inputLabelsPanel.add(inputLabel, c);
-        c = Utils.createConstraints(1, 1, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = GridBagConstraints.WEST;
-        inputLabelsPanel.add(inputLenLabel, c);
-        c = Utils.createConstraints(2, 1, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = GridBagConstraints.WEST;
-        inputLabelsPanel.add(inputRealLenLabel, c);
-        this.add(inputLabelsPanel, Utils.createConstraints(0, 2, 1));
-        c = Utils.createConstraints(0, 3, 1);
-        c.anchor = FIRST_LINE_START;
-        c.fill = BOTH;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        this.add(inputScroll, c);
-        JPanel outputLabelsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        c = Utils.createConstraints(0, 1, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        outputLabelsPanel.add(outputLabel, c);
-        c = Utils.createConstraints(1, 1, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        outputLabelsPanel.add(outputLenLabel, c);
-        c = Utils.createConstraints(2, 1, 1);
-        c.insets = new Insets(5, 5, 5, 5);
-        outputLabelsPanel.add(outputRealLenLabel, c);
-        this.add(outputLabelsPanel, Utils.createConstraints(1, 2, 1));
-        c = Utils.createConstraints(1, 3, 1);
-        c.anchor = FIRST_LINE_START;
-        c.fill = BOTH;
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        this.add(outputScroll, c);
-        c = Utils.createConstraints(0, 4, 2);
-        c.anchor = GridBagConstraints.SOUTH;
-        c.fill = BOTH;
-        c.weightx = 1.0;
-        this.add(buttonsPanel, c);
-        c = Utils.createConstraints(0, 5, 2);
-        c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = LAST_LINE_START;
-        c.fill = BOTH;
-        c.weightx = 1.0;
-        this.add(hexScroll, c);
-    }
-
-    public JTabbedPane buildTabbedPane(){
-        JTabbedPane tabs = new JTabbedPane();
-
-        for (int i = 0; i < Tag.Category.values().length; i++) {
-            tabs.addTab(Tag.Category.values()[i].name(), Utils.createButtons(hackvertor.getTags(), inputArea, Tag.Category.values()[i], null, false));
-        }
-
-        tabs.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int tabIndex = tabs.getSelectedIndex();
-                if (tabs.getTitleAt(tabIndex).equals("Custom")) {
-                    tabs.setComponentAt(tabIndex, Utils.createButtons(hackvertor.getTags(), inputArea, Tag.Category.Custom, null, false));
-                }
-            }
-        });
-
-        tabs.addTab("Search", new SearchPanel(hackvertor, this));
-
-        tabs.setAutoscrolls(true);
-        tabs.setSelectedIndex(4);
-
-        return tabs;
     }
 
     public void readClipboardAndDecode() {
         try {
             String data = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-            if(data.length() > 10000) {
+            if (data.length() > 10000) {
                 return;
             }
             String inputValue = inputArea.getText();
@@ -514,8 +561,8 @@ public class HackvertorPanel extends JPanel {
         }
     }
 
-    public JTextArea getInputArea() {
-        return inputArea;
+    public JTabbedPane getTabs() {
+        return tabs;
     }
 
     public JTextArea getOutputArea() {
