@@ -37,7 +37,7 @@ public class HackvertorMessageTab implements IMessageEditorTab {
                 changed = true;
             }
         });
-        hackvertorContainer.add(hackvertorPanel);
+        hackvertorContainer.add(hackvertorPanel.$$$getRootComponent$$$());
         hackvertorContainer.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
