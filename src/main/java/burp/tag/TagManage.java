@@ -11,8 +11,7 @@ public class TagManage {
 
     private Hackvertor hackvertor;
 
-    public TagManage(Hackvertor hackvertor) {
-        this.hackvertor = hackvertor;
+    public TagManage() {
     }
 
     public void loadCustomTags() {
@@ -130,4 +129,9 @@ public class TagManage {
         }
         return tag;
     }
+
+    public void setHackvertor(Hackvertor hackvertor) {
+        this.hackvertor = hackvertor;
+    }
+
 }

@@ -61,8 +61,9 @@ public class BurpExtender implements IBurpExtender {
         stdout = new PrintWriter(callbacks.getStdout(), true);
         tagCodeExecutionKey = Utils.generateRandomCodeExecutionKey();
         loadNgrams();
-        tagManage = new TagManage(hackvertor);
+        tagManage = new TagManage();
         hackvertor = new Hackvertor(tagManage);
+        tagManage.setHackvertor(hackvertor);
         callbacks.setExtensionName("Hackvertor");
         uiInit();
         httpListener = new HttpListener(tagManage);

@@ -13,6 +13,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.HashMap;
 
 public class ExtensionPanel {
 
@@ -20,8 +21,8 @@ public class ExtensionPanel {
 
     private JPanel rootPanel;
     private JTabbedPaneClosable tabbedPanel;
-    private HackvertorPanel hackvertorPanel;
     private Hackvertor hackvertor;
+    private HashMap<Integer, HackvertorPanel> hackvertorPanelHashMap = new HashMap();
 
     public ExtensionPanel(Hackvertor hackvertor) {
         this.hackvertor = hackvertor;
@@ -66,6 +67,9 @@ public class ExtensionPanel {
             }
         };
         tabbedPanel.addComponentListener(componentAdapter);
+
+        addNewPanel();
+        tabbedPanel.addTab("...", new Panel());
     }
 
     /**
@@ -76,18 +80,10 @@ public class ExtensionPanel {
      * @noinspection ALL
      */
     private void $$$setupUI$$$() {
-        createUIComponents();
         rootPanel = new JPanel();
         rootPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         tabbedPanel = new JTabbedPaneClosable();
         rootPanel.add(tabbedPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        tabbedPanel.addTab("1", panel1);
-        panel1.add(hackvertorPanel.$$$getRootComponent$$$(), new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        tabbedPanel.addTab("...", panel2);
     }
 
     /**
@@ -98,30 +94,32 @@ public class ExtensionPanel {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
-        hackvertorPanel = new HackvertorPanel(hackvertor);
-
     }
 
     public void refresh() {
-        int index = tabbedPanel.getSelectedIndex();
-        if (index == -1) {
-            return;
-        }
-        HackvertorPanel selectedPanel = (HackvertorPanel) tabbedPanel.getComponentAt(index);
-        JTabbedPane tabs = selectedPanel.getTabs();
-        int tabIndex = tabs.getSelectedIndex();
-        String text = tabs.getTitleAt(tabIndex);
-        if (text.equals("Custom")) {
-            tabs.setComponentAt(tabIndex, Utils.createButtons(hackvertor.getTags(), selectedPanel.getInputArea(), Tag.Category.Custom, null, false));
-        }
+        hackvertorPanelHashMap.entrySet().forEach((integerHackvertorPanelEntry -> {
+            HackvertorPanel value = integerHackvertorPanelEntry.getValue();
+            JTabbedPane tabs = value.getTabs();
+            int tabIndex = tabs.getSelectedIndex();
+            String text = tabs.getTitleAt(tabIndex);
+            if (text.equals("Custom")) {
+                tabs.setComponentAt(tabIndex, Utils.createButtons(hackvertor.getTags(), value.getInputArea(), Tag.Category.Custom, null, false));
+            }
+        }));
     }
 
     public HackvertorPanel addNewPanel() {
         HackvertorPanel panel = new HackvertorPanel(hackvertor);
-        tabCounter++;
-        tabbedPanel.insertTab(String.valueOf(tabCounter), null, panel.$$$getRootComponent$$$(), null, tabbedPanel.getTabCount() - 1);
-        tabbedPanel.setSelectedIndex(tabbedPanel.getTabCount() - 2);
+        int index = tabbedPanel.getTabCount() == 0 ? 0 : tabbedPanel.getTabCount() - 1;
+        tabbedPanel.insertTab(String.valueOf(tabCounter), null, panel.$$$getRootComponent$$$(), null, index);
+
+        hackvertorPanelHashMap.put(tabCounter, panel);
+
+        int selectIndex = tabbedPanel.getTabCount() <= 1 ? 0 : tabbedPanel.getTabCount() - 2;
+        if (!(tabbedPanel.getTabCount() <= 1)) {
+            tabCounter++;
+        }
+        tabbedPanel.setSelectedIndex(selectIndex);
         return panel;
     }
 
