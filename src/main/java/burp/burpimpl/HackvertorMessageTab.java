@@ -41,13 +41,9 @@ public class HackvertorMessageTab implements IMessageEditorTab {
         hackvertorContainer.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (currentMessage != null) {
-                            hackvertorPanel.getInputArea().setText(BurpExtender.helpers.bytesToString(currentMessage));
-                        }
-                    }
-                });
+                if (currentMessage != null) {
+                    hackvertorPanel.getInputArea().setText(BurpExtender.helpers.bytesToString(currentMessage));
+                }
             }
         });
     }

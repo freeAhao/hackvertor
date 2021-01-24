@@ -67,9 +67,6 @@ public class BurpExtender implements IBurpExtender {
         uiInit();
         httpListener = new HttpListener(tagManage);
         callbacks.registerHttpListener(httpListener);
-        extensionStateListener = new ExtensionStateListener(burpMenu);
-        extensionStateListener.setHvShutdown(false);
-        callbacks.registerExtensionStateListener(extensionStateListener);
         Security.addProvider(new BouncyCastleProvider());
     }
 
@@ -91,6 +88,9 @@ public class BurpExtender implements IBurpExtender {
                     tagManage.loadCustomTags();
                     registerSuiteTab();
                     createBurpMenu();
+                    extensionStateListener = new ExtensionStateListener(burpMenu);
+                    extensionStateListener.setHvShutdown(false);
+                    callbacks.registerExtensionStateListener(extensionStateListener);
                     registerMessageEditorTabFactory();
                     contextMenuFactory = new ContextMenuFactory(extensionPanel, tagManage, hackvertor);
                     callbacks.registerContextMenuFactory(contextMenuFactory);
