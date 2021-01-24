@@ -56,6 +56,7 @@ public class Utils {
     public static JScrollPane createButtons(List<Tag> tags, final JTextArea inputArea, Tag.Category displayCategory, String searchTag, Boolean regex) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JScrollPane scrollFrame = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollFrame.setHorizontalScrollBarPolicy(30);
 
         for (final Tag tagObj : tags) {
             final JButton btn = new JButton(tagObj.name);

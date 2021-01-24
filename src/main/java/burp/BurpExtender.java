@@ -107,7 +107,7 @@ public class BurpExtender implements IBurpExtender {
     }
 
     private void registerSuiteTab() {
-        tab = new Tab(extensionPanel);
+        tab = new Tab(extensionPanel, hackvertor);
         callbacks.addSuiteTab(tab);
     }
 
