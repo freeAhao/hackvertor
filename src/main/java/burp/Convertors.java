@@ -243,9 +243,9 @@ public class Convertors {
             case "rotN":
                 return rotN(output, getInt(arguments, 0));
             case "aes_encrypt":
-                return aes_encrypt(output, getString(arguments, 0), getString(arguments, 1), getString(arguments, 2));
+                return aes_encrypt(output, getString(arguments, 0), getInt(arguments, 1), getString(arguments, 2), getString(arguments, 3));
             case "aes_decrypt":
-                return aes_decrypt(output, getString(arguments, 0), getString(arguments, 1), getString(arguments, 2));
+                return aes_decrypt(output, getString(arguments, 0), getInt(arguments, 1), getString(arguments, 2), getString(arguments, 3));
             case "rotN_bruteforce":
                 return rotN_bruteforce(output);
             case "xor":
@@ -1227,9 +1227,9 @@ public class Convertors {
         return out;
     }
 
-    static String aes_encrypt(String plaintext, String key, String transformations, String iv) {
+    static String aes_encrypt(String plaintext, String key, Integer keyLength, String transformations, String iv) {
         try {
-            return AES.encrypt(plaintext, key, transformations, iv);
+            return AES.encrypt(plaintext, key, keyLength, transformations, iv);
         } catch (NoSuchAlgorithmException e) {
             return "No such algorithm exception:" + e.toString();
         } catch (UnsupportedEncodingException e) {
@@ -1241,9 +1241,9 @@ public class Convertors {
         }
     }
 
-    static String aes_decrypt(String ciphertext, String key, String transformations, String iv) {
+    static String aes_decrypt(String ciphertext, String key, Integer keyLength, String transformations, String iv) {
         try {
-            return AES.decrypt(ciphertext, key, transformations, iv);
+            return AES.decrypt(ciphertext, key, keyLength, transformations, iv);
         } catch (NoSuchAlgorithmException e) {
             return "No such algorithm exception:" + e.toString();
         } catch (UnsupportedEncodingException e) {

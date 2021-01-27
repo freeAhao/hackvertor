@@ -270,6 +270,7 @@
               <splitpane position="left"/>
             </constraints>
             <properties>
+              <autoscrolls value="true"/>
               <maximumSize width="0" height="0"/>
               <minimumSize width="0" height="0"/>
             </properties>

@@ -1,12 +1,11 @@
-import burp.Convertors;
+import burp.AES;
 import org.junit.jupiter.api.Test;
 import org.python.core.Py;
 import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 
-import java.util.HashMap;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestConvertors {
     @Test
@@ -27,9 +26,32 @@ public class TestConvertors {
 //            pythonInterpreter.exec(code);
 
             code = "import requests\n" +
-                    "print requests.get('http://www.baidu.com').content\n"+
+                    "print requests.get('http://www.baidu.com').content\n" +
                     "";
             pythonInterpreter.exec(code);
+        });
+    }
+
+    @Test
+    void AesKey() throws Exception {
+
+        assertDoesNotThrow(() -> {
+            String encrypt = AES.encrypt("encrypt", "123456", 32, "AES/ECB/PKCS5Padding", "");
+            System.out.println("encrypt = " + encrypt);
+
+            encrypt = AES.encrypt("encrypt", "12345678901234567890", 16, "AES/ECB/PKCS5Padding", "");
+            System.out.println("encrypt = " + encrypt);
+
+        });
+
+        assertThrows(Exception.class, () -> {
+            String encrypt = AES.encrypt("encrypt", "123456", -32, "AES/ECB/PKCS5Padding", "");
+            System.out.println("encrypt = " + encrypt);
+        });
+
+        assertThrows(Exception.class, () -> {
+            String encrypt = AES.encrypt("encrypt", "12345678901234567890", 15, "AES/ECB/PKCS5Padding", "");
+            System.out.println("encrypt = " + encrypt);
         });
     }
 }

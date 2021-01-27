@@ -249,6 +249,7 @@ public class HackvertorPanel extends JComponent {
         hexView.setVisible(false);
         scrollPane3.setViewportView(hexView);
         tabs = new JTabbedPane();
+        tabs.setAutoscrolls(true);
         tabs.setMaximumSize(new Dimension(0, 0));
         tabs.setMinimumSize(new Dimension(0, 0));
         sPanel1.setLeftComponent(tabs);
