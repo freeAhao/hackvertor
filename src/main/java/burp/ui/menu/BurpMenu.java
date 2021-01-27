@@ -4,7 +4,6 @@ import burp.BurpExtender;
 import burp.Hackvertor;
 import burp.Utils;
 import burp.burpimpl.HttpListener;
-import burp.tag.TagManage;
 import burp.ui.ExtensionPanel;
 import burp.ui.Theme;
 import org.json.JSONArray;
@@ -40,16 +39,14 @@ public class BurpMenu {
     private JMenu hvMenuBar;
     private HttpListener httpListener;
     private Hackvertor hackvertor;
-    private TagManage tagManage;
     private JLabel libPathLabel;
     private JTextField libPathField;
     private JButton libPathButton;
     private ExtensionPanel extensionPanel;
 
-    public BurpMenu(HttpListener httpListener, Hackvertor hackvertor, TagManage tagManage, ExtensionPanel extensionPanel) {
+    public BurpMenu(HttpListener httpListener, Hackvertor hackvertor, ExtensionPanel extensionPanel) {
         this.httpListener = httpListener;
         this.hackvertor = hackvertor;
-        this.tagManage = tagManage;
         this.extensionPanel = extensionPanel;
     }
 
@@ -439,7 +436,6 @@ public class BurpMenu {
                 tag.put("code", code);
                 JSONObject customTagOptions = new JSONObject();
                 customTagOptions.put("customTag", tag);
-                Hackvertor hv = new Hackvertor(tagManage);
                 ArrayList<String> args = new ArrayList<>();
                 if (numberOfArgs == 0) {
                     customTagOptions = null;
@@ -528,9 +524,9 @@ public class BurpMenu {
                     numberOfArgs++;
                 }
                 if (edit) {
-                    tagManage.updateCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
+                    hackvertor.updateCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
                 } else {
-                    tagManage.createCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
+                    hackvertor.createCustomTag(tagName, language, code, argument1, argument1Combo.getSelectedItem().toString(), argument1DefaultValue, argument2, argument2Combo.getSelectedItem().toString(), argument2DefaultValue, numberOfArgs);
                 }
                 extensionPanel.refresh();
                 createTagWindow.dispose();
@@ -597,7 +593,7 @@ public class BurpMenu {
                         JSONArray tags = new JSONArray(tagsJSON);
                         hackvertor.setCustomTags(tags);
                         Utils.alert("All your tags have been replaced from the clipboard");
-                        tagManage.saveCustomTags();
+                        hackvertor.saveCustomTags();
                         listTagsWindow.dispose();
                         showListTagsDialog();
                     } catch (JSONException ex) {
@@ -625,7 +621,7 @@ public class BurpMenu {
                 if (tagCombo.getSelectedItem().toString().equals(customTag.getString("tagName"))) {
                     hackvertor.getCustomTags().remove(i);
                     tagCombo.removeItemAt(tagCombo.getSelectedIndex());
-                    tagManage.saveCustomTags();
+                    hackvertor.saveCustomTags();
                     break;
                 }
             }

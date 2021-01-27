@@ -2,7 +2,6 @@ package burp.burpimpl;
 
 import burp.*;
 import burp.tag.Tag;
-import burp.tag.TagManage;
 import burp.ui.ExtensionPanel;
 
 import javax.swing.*;
@@ -19,12 +18,10 @@ import java.util.List;
 public class ContextMenuFactory implements IContextMenuFactory {
 
     private ExtensionPanel extensionPanel;
-    private TagManage tagManage;
     private Hackvertor hackvertor;
 
-    public ContextMenuFactory(ExtensionPanel extensionPanel, TagManage tagManage, Hackvertor hackvertor) {
+    public ContextMenuFactory(ExtensionPanel extensionPanel, Hackvertor hackvertor) {
         this.extensionPanel = extensionPanel;
-        this.tagManage = tagManage;
         this.hackvertor = hackvertor;
     }
 
@@ -66,8 +63,7 @@ public class ContextMenuFactory implements IContextMenuFactory {
 
         JMenuItem copyUrl = new JMenuItem("Copy URL");
         copyUrl.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor(tagManage);
-            URL url = BurpExtender.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest())))).getUrl();
+            URL url = BurpExtender.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), BurpExtender.helpers.stringToBytes(hackvertor.convert(BurpExtender.helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest())))).getUrl();
             StringSelection stringSelection = null;
             stringSelection = new StringSelection(Utils.buildUrl(url));
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -77,16 +73,14 @@ public class ContextMenuFactory implements IContextMenuFactory {
 
         JMenuItem convert = new JMenuItem("Convert tags");
         convert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor(tagManage);
             if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
                 byte[] message = invocation.getSelectedMessages()[0].getRequest();
-                invocation.getSelectedMessages()[0].setRequest(BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(message))));
+                invocation.getSelectedMessages()[0].setRequest(BurpExtender.helpers.stringToBytes(hackvertor.convert(BurpExtender.helpers.bytesToString(message))));
             }
         });
         submenu.add(convert);
         JMenuItem autodecodeConvert = new JMenuItem("Auto decode & Convert");
         autodecodeConvert.addActionListener(e -> {
-            Hackvertor hv = new Hackvertor(tagManage);
             if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
                 byte[] message = invocation.getSelectedMessages()[0].getRequest();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -102,12 +96,12 @@ public class ContextMenuFactory implements IContextMenuFactory {
                     System.err.println(e1.toString());
                 }
                 message = invocation.getSelectedMessages()[0].getRequest();
-                invocation.getSelectedMessages()[0].setRequest(BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(message))));
+                invocation.getSelectedMessages()[0].setRequest(BurpExtender.helpers.stringToBytes(hackvertor.convert(BurpExtender.helpers.bytesToString(message))));
             }
         });
         submenu.add(autodecodeConvert);
         submenu.addSeparator();
-        tagManage.loadCustomTags();
+        hackvertor.loadCustomTags();
         for (int i = 0; i < Tag.Category.values().length; i++) {
             Tag.Category category = Tag.Category.values()[i];
             JMenu categoryMenu = Utils.createTagMenuForCategory(hackvertor.getTags(), category, invocation, "", false);

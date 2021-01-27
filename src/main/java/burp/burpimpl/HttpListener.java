@@ -1,7 +1,6 @@
 package burp.burpimpl;
 
 import burp.*;
-import burp.tag.TagManage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -16,10 +15,9 @@ public class HttpListener implements IHttpListener {
     private boolean tagsInScanner = true;
     private boolean tagsInExtensions = true;
     private boolean autoUpdateContentLength = true;
-    private TagManage tagManage;
+    private Hackvertor hackvertor;
 
-    public HttpListener(TagManage tagManage) {
-        this.tagManage = tagManage;
+    public HttpListener() {
     }
 
     private boolean isNeedProcess(int toolFlag) {
@@ -138,8 +136,7 @@ public class HttpListener implements IHttpListener {
         }
         byte[] request = messageInfo.getRequest();
         if (BurpExtender.helpers.indexOf(request, BurpExtender.helpers.stringToBytes("<@"), true, 0, request.length) > -1) {
-            Hackvertor hv = new Hackvertor(tagManage);
-            request = BurpExtender.helpers.stringToBytes(hv.convert(BurpExtender.helpers.bytesToString(request)));
+            request = BurpExtender.helpers.stringToBytes(hackvertor.convert(BurpExtender.helpers.bytesToString(request)));
             if (autoUpdateContentLength) {
                 request = fixContentLength(request);
             }
@@ -201,5 +198,9 @@ public class HttpListener implements IHttpListener {
 
     public static void setCodeExecutionTagsEnabled(boolean codeExecutionTagsEnabled) {
         HttpListener.codeExecutionTagsEnabled = codeExecutionTagsEnabled;
+    }
+
+    public void setHackvertor(Hackvertor hackvertor) {
+        this.hackvertor = hackvertor;
     }
 }

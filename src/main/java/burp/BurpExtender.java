@@ -2,7 +2,6 @@ package burp;
 
 import burp.burpimpl.*;
 import burp.tag.Tag;
-import burp.tag.TagManage;
 import burp.ui.ExtensionPanel;
 import burp.ui.menu.BurpMenu;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -38,7 +37,6 @@ public class BurpExtender implements IBurpExtender {
     private ContextMenuFactory contextMenuFactory;
     private Tab tab;
     private BurpMenu burpMenu;
-    private TagManage tagManage;
     private HackvertorPayloadProcessor intruderPayloadProcessor;
 
     public static boolean hasMethodAnd1Arg(Object obj, String methodStr) {
@@ -61,12 +59,10 @@ public class BurpExtender implements IBurpExtender {
         stdout = new PrintWriter(callbacks.getStdout(), true);
         tagCodeExecutionKey = Utils.generateRandomCodeExecutionKey();
         loadNgrams();
-        tagManage = new TagManage();
-        hackvertor = new Hackvertor(tagManage);
-        tagManage.setHackvertor(hackvertor);
+        hackvertor = new Hackvertor();
         callbacks.setExtensionName("Hackvertor");
         uiInit();
-        httpListener = new HttpListener(tagManage);
+        httpListener = new HttpListener();
         callbacks.registerHttpListener(httpListener);
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -86,14 +82,14 @@ public class BurpExtender implements IBurpExtender {
                     stdout.println("Hackvertor v1.6.0");
                     registerPayloadProcessors();
                     initExtensionPanel();
-                    tagManage.loadCustomTags();
+                    hackvertor.loadCustomTags();
                     registerSuiteTab();
                     createBurpMenu();
                     extensionStateListener = new ExtensionStateListener(burpMenu);
                     extensionStateListener.setHvShutdown(false);
                     callbacks.registerExtensionStateListener(extensionStateListener);
                     registerMessageEditorTabFactory();
-                    contextMenuFactory = new ContextMenuFactory(extensionPanel, tagManage, hackvertor);
+                    contextMenuFactory = new ContextMenuFactory(extensionPanel, hackvertor);
                     callbacks.registerContextMenuFactory(contextMenuFactory);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -113,7 +109,7 @@ public class BurpExtender implements IBurpExtender {
     }
 
     private void createBurpMenu() {
-        burpMenu = new BurpMenu(httpListener, hackvertor, tagManage, extensionPanel);
+        burpMenu = new BurpMenu(httpListener, hackvertor, extensionPanel);
         burpMenu.createMenu();
     }
 
