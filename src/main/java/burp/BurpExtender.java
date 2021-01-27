@@ -62,7 +62,7 @@ public class BurpExtender implements IBurpExtender {
         hackvertor = new Hackvertor();
         callbacks.setExtensionName("Hackvertor");
         uiInit();
-        httpListener = new HttpListener();
+        httpListener = new HttpListener(hackvertor);
         callbacks.registerHttpListener(httpListener);
         Security.addProvider(new BouncyCastleProvider());
     }

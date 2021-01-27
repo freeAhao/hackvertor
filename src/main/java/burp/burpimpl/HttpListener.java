@@ -17,7 +17,8 @@ public class HttpListener implements IHttpListener {
     private boolean autoUpdateContentLength = true;
     private Hackvertor hackvertor;
 
-    public HttpListener() {
+    public HttpListener(Hackvertor hackvertor) {
+        this.hackvertor = hackvertor;
     }
 
     private boolean isNeedProcess(int toolFlag) {
@@ -200,7 +201,4 @@ public class HttpListener implements IHttpListener {
         HttpListener.codeExecutionTagsEnabled = codeExecutionTagsEnabled;
     }
 
-    public void setHackvertor(Hackvertor hackvertor) {
-        this.hackvertor = hackvertor;
-    }
 }
