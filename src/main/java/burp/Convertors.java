@@ -167,7 +167,7 @@ public class Convertors {
                     return output;
                 }else if(tag.startsWith("get_")){ //Backwards compatibility with previous get_VARNAME tag format
                     String varname = tag.replace("get_","");
-                    return variableMap.getOrDefault(varname, StringUtils.isEmpty(output) ? "UNDEFINED" : output);
+                    return variableMap.getOrDefault(varname, StringUtils.isEmpty(output) ? null : output);
                 } else {
                     try {
                         return charset_convert(output, "UTF-8", tag);
@@ -635,7 +635,14 @@ public class Convertors {
         if(elements.size() == 0) {
             StringBuilder sb = new StringBuilder();
             while(!stack.empty()){
-                sb.insert(0, stack.pop());
+                Object pop = stack.pop();
+                if(pop instanceof Element.SelfClosingTag){
+                    Element.SelfClosingTag tag = (Element.SelfClosingTag) pop;
+                    String tagOutput = callTag(variables, customTags, tag.getIdentifier(), "", tag.getArguments());
+                    sb.insert(0, tagOutput==null?"UNDEFINED":tagOutput);
+                }else{
+                    sb.insert(0, pop);
+                }
             }
             return sb.toString();
         }
@@ -647,7 +654,11 @@ public class Convertors {
         }else if(element instanceof Element.SelfClosingTag){ //Self closing tag. Add its output as a TextElement to our stack.
             Element.SelfClosingTag selfClosingTag = (Element.SelfClosingTag) element;
             String tagOutput = callTag(variables, customTags, selfClosingTag.getIdentifier(), "", selfClosingTag.getArguments());
-            stack.push(new Element.TextElement(tagOutput));
+            if(tagOutput == null){
+                stack.push(element);
+            }else{
+                stack.push(new Element.TextElement(tagOutput));
+            }
         }else if(element instanceof Element.StartTag){ //Start of a conversion.
             Stack<Element> newStackContext = new Stack<>();
             newStackContext.push(element);
@@ -662,7 +673,7 @@ public class Convertors {
                 //Look through our stack until we find the matching opening tag, and add interim items to a processing stack
                 while (!(startTag instanceof Element.StartTag) || !((Element.StartTag) startTag).getIdentifier().equalsIgnoreCase(endTag.getIdentifier())){
                     siftStack.push(startTag);
-                    startTag = stack.pop();
+                    startTag = (Element) stack.pop();
                 }
                 //We found the matching start tag!
                 //All the items on the sift stack should be treated as text, so add them to the text buffer.

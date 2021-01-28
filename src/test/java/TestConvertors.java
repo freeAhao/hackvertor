@@ -9,7 +9,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestConvertors {
     @Test
-    void Python(){
+    void pythonStdoutAndErr(){
+        PythonInterpreter pythonInterpreter = new PythonInterpreter();
+        String code = "import sys\n" +
+                "from burp import BurpExtender\n" +
+                "class StreamWrapper(object):\n" +
+                "   def __init__(self, wrapped):\n" +
+                "       self.__wrapped = wrapped\n" +
+                "   def __getattr__(self, name):\n" +
+                "       return getattr(self.__wrapped, name)\n" +
+                "   def write(self, text):\n" +
+                "       BurpExtender.print(text)\n" +
+                "orig_stdout = sys.stdout\n" +
+                "sys.stdout = StreamWrapper(orig_stdout)\n" +
+                "print('a')";
+
+        pythonInterpreter.exec(code);
+    }
+
+    @Test
+    void pythonCustomLib(){
         assertDoesNotThrow(()->{
             String code = "import sys\n" +
                     "path = \"/Users/ahao/git/python2/venv/lib/python2.7/site-packages\"\n" +
@@ -33,7 +52,7 @@ public class TestConvertors {
     }
 
     @Test
-    void AesKey() throws Exception {
+    void aesKey() throws Exception {
 
         assertDoesNotThrow(() -> {
             String encrypt = AES.encrypt("encrypt", "123456", 32, "AES/ECB/PKCS5Padding", "");
