@@ -98,10 +98,14 @@ public class HttpListener implements IHttpListener {
                 return;
         }
         byte[] request = messageInfo.getRequest();
-        if (HackvertorExtension.helpers.indexOf(request, HackvertorExtension.helpers.stringToBytes("<@"), false, 0, request.length) > -1) {
-            String requestStr = HackvertorExtension.helpers.bytesToString(request);
-            HackvertorExtension.hackvertor.analyzeRequest(HackvertorExtension.helpers.stringToBytes(Hackvertor.removeHackvertorTags(requestStr)), messageInfo);
-            request = HackvertorExtension.helpers.stringToBytes(HackvertorExtension.hackvertor.convert(requestStr, HackvertorExtension.hackvertor));
+//        if (HackvertorExtension.helpers.indexOf(request, HackvertorExtension.helpers.stringToBytes("<@"), false, 0, request.length) > -1) {
+        if (HackvertorExtension.helpers.indexOf(request, "<@".getBytes(), false, 0, request.length) > -1) {
+//            String requestStr = HackvertorExtension.helpers.bytesToString(request);
+            String requestStr = new String(request);
+//            HackvertorExtension.hackvertor.analyzeRequest(HackvertorExtension.helpers.stringToBytes(Hackvertor.removeHackvertorTags(requestStr)), messageInfo);
+            HackvertorExtension.hackvertor.analyzeRequest((Hackvertor.removeHackvertorTags(requestStr)).getBytes(), messageInfo);
+//            request = HackvertorExtension.helpers.stringToBytes(HackvertorExtension.hackvertor.convert(requestStr, HackvertorExtension.hackvertor));
+            request = (HackvertorExtension.hackvertor.convert(requestStr, HackvertorExtension.hackvertor)).getBytes();
             if (autoUpdateContentLength) {
                 request = HttpUtils.fixContentLength(request);
             }

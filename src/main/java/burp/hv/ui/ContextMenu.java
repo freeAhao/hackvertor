@@ -80,8 +80,10 @@ public class ContextMenu implements IContextMenuFactory {
 
         JMenuItem copyUrl = new JMenuItem("Copy URL");
         copyUrl.addActionListener(e -> {
-            String converted = HackvertorExtension.hackvertor.convert(HackvertorExtension.helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest()), null);
-            URL url = HackvertorExtension.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), HackvertorExtension.helpers.stringToBytes(converted)).getUrl();
+//            String converted = HackvertorExtension.hackvertor.convert(HackvertorExtension.helpers.bytesToString(invocation.getSelectedMessages()[0].getRequest()), null);
+            String converted = HackvertorExtension.hackvertor.convert(new String(invocation.getSelectedMessages()[0].getRequest()), null);
+//            URL url = HackvertorExtension.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), HackvertorExtension.helpers.stringToBytes(converted)).getUrl();
+            URL url = HackvertorExtension.helpers.analyzeRequest(invocation.getSelectedMessages()[0].getHttpService(), (converted).getBytes()).getUrl();
             StringSelection stringSelection = null;
             stringSelection = new StringSelection(UrlUtils.buildUrl(url));
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -93,7 +95,8 @@ public class ContextMenu implements IContextMenuFactory {
         convert.addActionListener(e -> {
             if (invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_EDITOR_REQUEST || invocation.getInvocationContext() == IContextMenuInvocation.CONTEXT_MESSAGE_VIEWER_REQUEST) {
                 byte[] message = invocation.getSelectedMessages()[0].getRequest();
-                invocation.getSelectedMessages()[0].setRequest(HackvertorExtension.helpers.stringToBytes(HackvertorExtension.hackvertor.convert(HackvertorExtension.helpers.bytesToString(message), null)));
+//                invocation.getSelectedMessages()[0].setRequest(HackvertorExtension.helpers.stringToBytes(HackvertorExtension.hackvertor.convert(HackvertorExtension.helpers.bytesToString(message), null)));
+                invocation.getSelectedMessages()[0].setRequest((HackvertorExtension.hackvertor.convert(new String(message), null)).getBytes());
             }
         });
         submenu.add(convert);
@@ -124,7 +127,8 @@ public class ContextMenu implements IContextMenuFactory {
                 byte[] selection = Arrays.copyOfRange(message, bounds[0], bounds[1]);
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 try {
-                    byte[] convertedSelection = HackvertorExtension.helpers.stringToBytes(auto_decode_no_decrypt(HackvertorExtension.helpers.bytesToString(selection)));
+//                    byte[] convertedSelection = HackvertorExtension.helpers.stringToBytes(auto_decode_no_decrypt(HackvertorExtension.helpers.bytesToString(selection)));
+                    byte[] convertedSelection = (auto_decode_no_decrypt(new String(selection))).getBytes();
                     outputStream.write(Arrays.copyOfRange(message, 0, bounds[0]));
                     outputStream.write(convertedSelection);
                     outputStream.write(Arrays.copyOfRange(message, bounds[1], message.length));

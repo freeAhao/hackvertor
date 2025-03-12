@@ -857,7 +857,8 @@ public class Convertors {
     static String convertCharset(String input, String to) {
         String output = "";
         try {
-            return helpers.bytesToString(input.getBytes(to));
+//            return helpers.bytesToString(input.getBytes(to));
+            return new String(input.getBytes(to));
         } catch (UnsupportedEncodingException e) {
             return e.toString();
         }
@@ -866,7 +867,8 @@ public class Convertors {
     static String charset_convert(String input, String from, String to) throws UnsupportedEncodingException {
         byte[] inputBytes = input.getBytes();
         byte[] output = new String(inputBytes, from).getBytes(to);
-        return helpers.bytesToString(output);
+//        return helpers.bytesToString(output);
+        return new String(output);
     }
 
     static String context_url(String properties, Hackvertor hackvertor) {
@@ -947,7 +949,8 @@ public class Convertors {
         IRequestInfo analyzedRequest = hackvertor.getAnalyzedRequest();
         int bodyOffset = analyzedRequest.getBodyOffset();
         byte[] req = hackvertor.getRequest();
-        return helpers.bytesToString(Arrays.copyOfRange(req, bodyOffset, req.length));
+//        return helpers.bytesToString(Arrays.copyOfRange(req, bodyOffset, req.length));
+        return new String(Arrays.copyOfRange(req, bodyOffset, req.length));
     }
 
     static String json_parse(String input, String properties) {
@@ -1040,7 +1043,8 @@ public class Convertors {
             gzip.close();
             byte[] compressed = bos.toByteArray();
             bos.close();
-            return helpers.bytesToString(compressed);
+//            return helpers.bytesToString(compressed);
+            return new String(compressed);
         } catch (IOException e) {
             e.printStackTrace();
             return "Error:" + e.toString();
@@ -1048,7 +1052,8 @@ public class Convertors {
     }
 
     static String gzip_decompress(String input) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+//        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+        ByteArrayInputStream bis = new ByteArrayInputStream(input.getBytes());
         GZIPInputStream gis = null;
         byte[] bytes;
         try {
@@ -1076,7 +1081,8 @@ public class Convertors {
             cos.close();
             byte[] compressed = bos.toByteArray();
             bos.close();
-            return helpers.bytesToString(compressed);
+//            return helpers.bytesToString(compressed);
+            return new String(compressed);
         } catch (IOException e) {
             e.printStackTrace();
             return "Error:" + e.toString();
@@ -1084,7 +1090,8 @@ public class Convertors {
     }
 
     static String bzip2_decompress(String input) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+//        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+        ByteArrayInputStream bis = new ByteArrayInputStream(input.getBytes());
         BZip2CompressorInputStream cis = null;
         byte[] bytes;
         try {
@@ -1108,7 +1115,8 @@ public class Convertors {
             cos.close();
             byte[] compressed = bos.toByteArray();
             bos.close();
-            return helpers.bytesToString(compressed);
+//            return helpers.bytesToString(compressed);
+            return new String(compressed);
         } catch (IOException e) {
             e.printStackTrace();
             return "Error:" + e;
@@ -1116,7 +1124,8 @@ public class Convertors {
     }
 
     static String deflate_decompress(String input, Boolean includeHeader) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+//        ByteArrayInputStream bis = new ByteArrayInputStream(helpers.stringToBytes(input));
+        ByteArrayInputStream bis = new ByteArrayInputStream((input).getBytes());
         DeflateCompressorInputStream cis = null;
         byte[] bytes;
         try {
@@ -1159,20 +1168,24 @@ public class Convertors {
 
     static String base32_encode(String str) {
         Base32 base32 = new Base32();
-        return helpers.bytesToString(base32.encode(helpers.stringToBytes(str)));
+//        return helpers.bytesToString(base32.encode(helpers.stringToBytes(str)));
+        return new String(base32.encode(str.getBytes()));
     }
 
     static String decode_base32(String str) {
         Base32 base32 = new Base32();
-        return helpers.bytesToString(base32.decode(str.getBytes()));
+//        return helpers.bytesToString(base32.decode(str.getBytes()));
+        return new String(base32.decode(str.getBytes()));
     }
 
     static String base58_encode(String str) {
-        return Base58.encode(helpers.stringToBytes(str));
+//        return Base58.encode(helpers.stringToBytes(str));
+        return Base58.encode((str).getBytes());
     }
 
     static String decode_base58(String str) {
-        return helpers.bytesToString(Base58.decode(str));
+//        return helpers.bytesToString(Base58.decode(str));
+        return new String(Base58.decode(str));
     }
 
     static String base64Encode(String str) {
@@ -1181,7 +1194,8 @@ public class Convertors {
 
     static String decode_base64(String str) {
         try {
-            str = helpers.bytesToString(helpers.base64Decode(str));
+//            str = helpers.bytesToString(helpers.base64Decode(str));
+            str = new String(helpers.base64Decode(str));
         } catch (Exception e) {
             stderr.println(e.getMessage());
         }
@@ -1217,7 +1231,8 @@ public class Convertors {
                 str += "=";
                 break;
         }
-        return helpers.bytesToString(helpers.base64Decode(str));
+//        return helpers.bytesToString(helpers.base64Decode(str));
+        return new String(helpers.base64Decode(str));
     }
 
     static String burp_urlencode(String str) {
@@ -1421,7 +1436,7 @@ public class Convertors {
                 Mac hashMac = Mac.getInstance(algoName);
                 SecretKeySpec secret_key = new SecretKeySpec(secret.getBytes(), algoName);
                 hashMac.init(secret_key);
-                return message + "." + base64urlEncode(helpers.bytesToString(hashMac.doFinal(message.getBytes())));
+                return message + "." + base64urlEncode(new String(hashMac.doFinal(message.getBytes())));
             } else {
                 return message + ".";
             }

@@ -26,7 +26,8 @@ public class HackvertorInput extends JTextArea {
                 if (e.getClickCount() == 2) { // Detect double-click
                     int clickPos = that.viewToModel(e.getPoint());
                     String text = that.getText();
-                    IRequestInfo analyzedRequest = helpers.analyzeRequest(helpers.stringToBytes(text));
+//                    IRequestInfo analyzedRequest = helpers.analyzeRequest(helpers.stringToBytes(text));
+                    IRequestInfo analyzedRequest = helpers.analyzeRequest(text.getBytes());
                     List<IParameter> params = analyzedRequest.getParameters();
 
                     for (IParameter param : params) {

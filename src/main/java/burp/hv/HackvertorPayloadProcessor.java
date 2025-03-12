@@ -20,14 +20,16 @@ public class HackvertorPayloadProcessor implements IIntruderPayloadProcessor {
     }
 
     public byte[] processPayload(byte[] currentPayload, byte[] originalPayload, byte[] baseValue) {
-        String input = helpers.bytesToString(currentPayload);
+//        String input = helpers.bytesToString(currentPayload);
+        String input = new String(currentPayload);
         String tagOutput;
         try {
             tagOutput = Convertors.callTag(new HashMap<>(), hackvertor.getCustomTags(), this.tag, input, new ArrayList<String>(), null);
         } catch (ParseException e) {
             return null;
         }
-        byte[] output = helpers.stringToBytes(tagOutput);
+//        byte[] output = helpers.stringToBytes(tagOutput);
+        byte[] output = tagOutput.getBytes();
         return output;
     }
 

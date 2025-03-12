@@ -48,7 +48,8 @@ public class HackvertorMessageTab implements IMessageEditorTab {
                         });
                         hackvertorContainer.add(hackvertorPanel);
                         if (currentMessage != null) {
-                            hackvertorPanel.getInputArea().setText(HackvertorExtension.helpers.bytesToString(currentMessage));
+//                            hackvertorPanel.getInputArea().setText(HackvertorExtension.helpers.bytesToString(currentMessage));
+                            hackvertorPanel.getInputArea().setText(new String(currentMessage));
                         }
                         interfaceCreated = true;
                         hackvertorPanel.getInputArea().requestFocusInWindow();
@@ -79,7 +80,8 @@ public class HackvertorMessageTab implements IMessageEditorTab {
             changed = false;
         } else {
             if (hackvertorPanel != null) {
-                hackvertorPanel.getInputArea().setText(HackvertorExtension.helpers.bytesToString(content));
+//                hackvertorPanel.getInputArea().setText(HackvertorExtension.helpers.bytesToString(content));
+                hackvertorPanel.getInputArea().setText(new String(content));
             }
         }
         currentMessage = content;
@@ -88,7 +90,8 @@ public class HackvertorMessageTab implements IMessageEditorTab {
     @Override
     public byte[] getMessage() {
         if (changed) {
-            return HackvertorExtension.helpers.stringToBytes(hackvertorPanel.getInputArea().getText());
+//            return HackvertorExtension.helpers.stringToBytes(hackvertorPanel.getInputArea().getText());
+            return (hackvertorPanel.getInputArea().getText()).getBytes();
         } else {
             return currentMessage;
         }
@@ -102,6 +105,7 @@ public class HackvertorMessageTab implements IMessageEditorTab {
 
     @Override
     public byte[] getSelectedData() {
-        return HackvertorExtension.helpers.stringToBytes(hackvertorPanel.getInputArea().getSelectedText());
+//        return HackvertorExtension.helpers.stringToBytes(hackvertorPanel.getInputArea().getSelectedText());
+        return (hackvertorPanel.getInputArea().getSelectedText()).getBytes();
     }
 }

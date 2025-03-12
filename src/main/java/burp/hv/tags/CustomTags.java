@@ -974,7 +974,8 @@ public class CustomTags {
             return null;
         }
         secureRandom.nextBytes(randomBytes);
-        return DigestUtils.sha256Hex(HackvertorExtension.helpers.bytesToString(randomBytes)).substring(0, 32);
+//        return DigestUtils.sha256Hex(HackvertorExtension.helpers.bytesToString(randomBytes)).substring(0, 32);
+        return DigestUtils.sha256Hex(new String(randomBytes)).substring(0, 32);
     }
 
     public static String checkTagExecutionPermissions(String executionKey) {

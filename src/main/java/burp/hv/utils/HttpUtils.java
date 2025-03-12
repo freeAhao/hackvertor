@@ -32,7 +32,8 @@ public class HttpUtils {
 
     public static byte[] fixContentLength(byte[] request) {
         IRequestInfo analyzedRequest = HackvertorExtension.helpers.analyzeRequest(request);
-        if (countMatches(request, HackvertorExtension.helpers.stringToBytes("Content-Length: ")) > 0) {
+//        if (countMatches(request, HackvertorExtension.helpers.stringToBytes("Content-Length: ")) > 0) {
+        if (countMatches(request, "Content-Length: ".getBytes()) > 0) {
             int start = analyzedRequest.getBodyOffset();
             int contentLength = request.length - start;
             return setHeader(request, "Content-Length", Integer.toString(contentLength));
@@ -58,7 +59,8 @@ public class HttpUtils {
                 break;
             }
 
-            String header_str = HackvertorExtension.helpers.bytesToString(header_name);
+//            String header_str = HackvertorExtension.helpers.bytesToString(header_name);
+            String header_str = new String(header_name);
 
             if (header.equals(header_str)) {
                 int[] offsets = {line_start, headerValueStart, i - 2};
@@ -77,7 +79,8 @@ public class HttpUtils {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             outputStream.write(Arrays.copyOfRange(request, 0, offsets[1]));
-            outputStream.write(HackvertorExtension.helpers.stringToBytes(" " + value));
+//            outputStream.write(HackvertorExtension.helpers.stringToBytes(" " + value));
+            outputStream.write((" " + value).getBytes());
             outputStream.write(Arrays.copyOfRange(request, offsets[2], request.length));
             return outputStream.toByteArray();
         } catch (IOException e) {
