@@ -84,7 +84,8 @@ public class JTabbedPaneClosable extends JTabbedPane {
             });
             add(textField, c);
             JLabel close = new JLabel("x");
-            close.setFont(new Font("Courier", Font.PLAIN, 10));
+//            close.setFont(new Font("Courier", Font.PLAIN, 10));
+            close.setFont(new Font("Source Han Sans CN", Font.PLAIN, 10));
             close.setPreferredSize(new Dimension(10, 10));
             close.setBorder(null);
             close.addMouseListener(new CloseListener(tab));

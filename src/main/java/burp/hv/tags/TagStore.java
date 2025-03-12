@@ -54,7 +54,8 @@ public class TagStore {
         optionsPanel.setVisible(false);
         JLabel title = new JLabel("Title here");
         Utils.setMarginAndPadding(title, 10);
-        title.setFont(new Font("Arial",Font.BOLD,30));
+//        title.setFont(new Font("Arial",Font.BOLD,30));
+        title.setFont(new Font("Source Han Sans CN",Font.BOLD,30));
         title.putClientProperty("html.disable", Boolean.TRUE);
         JPanel buttonsPanel = new JPanel(new BorderLayout());
         Utils.setMarginAndPadding(buttonsPanel, 10);

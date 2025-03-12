@@ -72,7 +72,8 @@ public class HackvertorPanel extends JPanel {
             logoLabel = new JLabel();
         }
         final JTextArea hexView = new JTextArea();
-        hexView.setFont(new Font("Courier New", Font.PLAIN, hexView.getFont().getSize()));
+//        hexView.setFont(new Font("Courier New", Font.PLAIN, hexView.getFont().getSize()));
+        hexView.setFont(new Font("Source Han Sans CN", Font.PLAIN, hexView.getFont().getSize()));
         hexView.setRows(0);
         hexView.setOpaque(true);
         hexView.setEditable(false);
